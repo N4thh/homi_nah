@@ -1,0 +1,768 @@
+<!-- Statistics Section Content -->
+<div class="p-3">
+  <!-- Stats Overview Cards - Clean design without icons -->
+  <div class="stats-overview mb-3">
+    <div class="row g-2">
+      <div class="col-md-2">
+        <div class="stat-card bg-white p-2 rounded shadow-sm">
+          <h6 class="mb-1 text-muted small">Tổng số chủ nhà</h6>
+          <h5 class="mb-1">{{ owner_count }}</h5>
+          <small class="text-muted"
+            >+{{ weekly_stats.new_owners if weekly_stats.new_owners else 0 }}
+            trong tuần</small
+          >
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="stat-card bg-white p-2 rounded shadow-sm">
+          <h6 class="mb-1 text-muted small">Tổng người thuê</h6>
+          <h5 class="mb-1">{{ renter_count }}</h5>
+          <small class="text-muted"
+            >+{{ weekly_stats.new_renters if weekly_stats.new_renters else 0 }}
+            trong tuần</small
+          >
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="stat-card bg-white p-2 rounded shadow-sm">
+          <h6 class="mb-1 text-muted small">Tổng số phòng</h6>
+          <h5 class="mb-1">{{ total_homes }}</h5>
+          <small class="text-muted"
+            >+{{ weekly_stats.new_homes if weekly_stats.new_homes else 0 }}
+            trong tuần</small
+          >
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="stat-card bg-white p-2 rounded shadow-sm">
+          <h6 class="mb-1 text-muted small">Phí dịch vụ</h6>
+          <h5 class="mb-1">
+            {{ '{:,.0f}'.format(admin_commission) if admin_commission else 0 }}
+            <span class="small text-muted">VND</span>
+          </h5>
+          <small class="text-success"
+            >+{{ weekly_stats.booking_growth_rate if
+            weekly_stats.booking_growth_rate else 0 }}% so với tuần trước</small
+          >
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="stat-card bg-white p-2 rounded shadow-sm">
+          <h6 class="mb-1 text-muted small">Tổng lượt đặt phòng</h6>
+          <h5 class="mb-1">
+            {{ total_bookings }} <span class="small text-muted">lần</span>
+          </h5>
+          <small class="text-muted"
+            >+{{ weekly_stats.new_bookings if weekly_stats.new_bookings else 0
+            }} trong tuần</small
+          >
+        </div>
+      </div>
+      <div class="col-md-2">
+        <div class="stat-card bg-white p-2 rounded shadow-sm">
+          <h6 class="mb-1 text-muted small">Lượt đặt phòng</h6>
+          <h5 class="mb-1">
+            +{{ weekly_stats.booking_growth_rate if
+            weekly_stats.booking_growth_rate else 0 }}%
+          </h5>
+          <small class="text-muted">So với tuần trước</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="row g-3 mb-4">
+    <!-- Booking Statistics Chart (Left) -->
+    <div class="col-lg-6">
+      <div class="chart-container bg-white p-4 rounded shadow-sm h-100">
+        <div
+          class="chart-header d-flex justify-content-between align-items-center mb-3"
+        >
+          <h5 class="mb-0">
+            <i class="fas fa-chart-area text-primary me-2"></i>
+            Lượt đặt phòng
+          </h5>
+
+          <!-- Chart Navigation Dropdown -->
+          {% from 'admin/components/stats_dropdown.html' import stats_dropdown
+          %} {{ stats_dropdown('bookingChartPeriodSelect', [ {'value': 'week',
+          'text': 'Tuần này (7 ngày)', 'icon': 'calendar-week', 'selected':
+          true}, {'value': 'month', 'text': 'Tháng này (30 ngày)', 'icon':
+          'calendar-alt'}, {'value': 'year', 'text': 'Năm này (365 ngày)',
+          'icon': 'calendar'} ]) }}
+        </div>
+
+        <div class="chart-wrapper" style="position: relative; height: 300px">
+          <!-- Chart Canvas -->
+          <div
+            class="line-chart"
+            id="bookingStatsChart"
+            style="position: relative; width: 100%; height: 100%"
+          >
+            <!-- Y-axis labels -->
+            <div
+              class="y-axis-labels"
+              style="
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 30px;
+                width: 50px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                font-size: 12px;
+                color: #666;
+              "
+            >
+              <div>100</div>
+              <div>75</div>
+              <div>50</div>
+              <div>25</div>
+              <div>0</div>
+            </div>
+
+            <!-- Chart area -->
+            <div
+              class="chart-area"
+              style="
+                position: absolute;
+                left: 55px;
+                top: 0;
+                right: 0;
+                bottom: 30px;
+                border-left: 2px solid #e5e7eb;
+                border-bottom: 2px solid #e5e7eb;
+              "
+            >
+              <!-- Grid lines -->
+              <div
+                class="grid-lines"
+                style="position: absolute; top: 0; left: 0; right: 0; bottom: 0"
+              >
+                <div
+                  style="
+                    position: absolute;
+                    top: 0%;
+                    left: 0;
+                    right: 0;
+                    height: 1px;
+                    background: #f3f4f6;
+                  "
+                ></div>
+                <div
+                  style="
+                    position: absolute;
+                    top: 25%;
+                    left: 0;
+                    right: 0;
+                    height: 1px;
+                    background: #f3f4f6;
+                  "
+                ></div>
+                <div
+                  style="
+                    position: absolute;
+                    top: 50%;
+                    left: 0;
+                    right: 0;
+                    height: 1px;
+                    background: #f3f4f6;
+                  "
+                ></div>
+                <div
+                  style="
+                    position: absolute;
+                    top: 75%;
+                    left: 0;
+                    right: 0;
+                    height: 1px;
+                    background: #f3f4f6;
+                  "
+                ></div>
+              </div>
+
+              <!-- Line chart SVG -->
+              <svg
+                id="bookingLineChartSvg"
+                style="
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  width: 100%;
+                  height: 100%;
+                "
+              >
+                <!-- Hourly line -->
+                <polyline
+                  id="hourlyLine"
+                  fill="none"
+                  stroke="#f59e0b"
+                  stroke-width="3"
+                  points=""
+                />
+                <!-- Nightly line -->
+                <polyline
+                  id="nightlyLine"
+                  fill="none"
+                  stroke="#3b82f6"
+                  stroke-width="3"
+                  points=""
+                />
+
+                <!-- Data points for Hourly -->
+                <g id="hourlyPoints"></g>
+                <!-- Data points for Nightly -->
+                <g id="nightlyPoints"></g>
+              </svg>
+            </div>
+
+            <!-- X-axis labels -->
+            <div
+              class="x-axis-labels"
+              id="bookingXAxisLabels"
+              style="
+                position: absolute;
+                left: 55px;
+                bottom: 0;
+                right: 0;
+                height: 25px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 12px;
+                color: #666;
+              "
+            >
+              <!-- Labels will be generated by JavaScript -->
+            </div>
+          </div>
+
+          <!-- Legend -->
+          <div
+            class="chart-legend"
+            style="
+              position: absolute;
+              top: 10px;
+              right: 10px;
+              display: flex;
+              gap: 20px;
+              font-size: 12px;
+            "
+          >
+            <div
+              class="legend-item"
+              style="display: flex; align-items: center; gap: 5px"
+            >
+              <div
+                style="
+                  width: 12px;
+                  height: 3px;
+                  background: #f59e0b;
+                  border-radius: 2px;
+                "
+              ></div>
+              <span>Đặt phòng theo giờ</span>
+            </div>
+            <div
+              class="legend-item"
+              style="display: flex; align-items: center; gap: 5px"
+            >
+              <div
+                style="
+                  width: 12px;
+                  height: 3px;
+                  background: #3b82f6;
+                  border-radius: 2px;
+                "
+              ></div>
+              <span>Đặt phòng theo ngày</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Growth Chart (Right) -->
+    <div class="col-lg-6">
+      <div class="chart-container bg-white p-4 rounded shadow-sm h-100">
+        <div
+          class="chart-header d-flex justify-content-between align-items-center mb-3"
+        >
+          <h5 class="mb-0">
+            <i class="fas fa-chart-line text-success me-2"></i>
+            Tăng trưởng người dùng
+          </h5>
+
+          <!-- Chart Navigation Dropdown -->
+          {{ stats_dropdown('userChartPeriodSelect', [ {'value': 'week', 'text':
+          'Tuần này (7 ngày)', 'icon': 'calendar-week', 'selected': true},
+          {'value': 'month', 'text': 'Tháng này (30 ngày)', 'icon':
+          'calendar-alt'}, {'value': 'year', 'text': 'Năm này (365 ngày)',
+          'icon': 'calendar'} ]) }}
+        </div>
+
+        <div class="chart-wrapper" style="position: relative; height: 300px">
+          <!-- Chart Canvas -->
+          <div
+            class="line-chart"
+            id="userGrowthChart"
+            style="position: relative; width: 100%; height: 100%"
+          >
+            <!-- Y-axis labels -->
+            <div
+              class="y-axis-labels"
+              style="
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 30px;
+                width: 50px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                font-size: 12px;
+                color: #666;
+              "
+            >
+              <div>40</div>
+              <div>30</div>
+              <div>20</div>
+              <div>10</div>
+              <div>0</div>
+            </div>
+
+            <!-- Chart area -->
+            <div
+              class="chart-area"
+              style="
+                position: absolute;
+                left: 55px;
+                top: 0;
+                right: 0;
+                bottom: 30px;
+                border-left: 2px solid #e5e7eb;
+                border-bottom: 2px solid #e5e7eb;
+              "
+            >
+              <!-- Grid lines -->
+              <div
+                class="grid-lines"
+                style="position: absolute; top: 0; left: 0; right: 0; bottom: 0"
+              >
+                <div
+                  style="
+                    position: absolute;
+                    top: 0%;
+                    left: 0;
+                    right: 0;
+                    height: 1px;
+                    background: #f3f4f6;
+                  "
+                ></div>
+                <div
+                  style="
+                    position: absolute;
+                    top: 25%;
+                    left: 0;
+                    right: 0;
+                    height: 1px;
+                    background: #f3f4f6;
+                  "
+                ></div>
+                <div
+                  style="
+                    position: absolute;
+                    top: 50%;
+                    left: 0;
+                    right: 0;
+                    height: 1px;
+                    background: #f3f4f6;
+                  "
+                ></div>
+                <div
+                  style="
+                    position: absolute;
+                    top: 75%;
+                    left: 0;
+                    right: 0;
+                    height: 1px;
+                    background: #f3f4f6;
+                  "
+                ></div>
+              </div>
+
+              <!-- Line chart SVG -->
+              <svg
+                id="lineChartSvg"
+                style="
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  width: 100%;
+                  height: 100%;
+                "
+              >
+                <!-- Owner line -->
+                <polyline
+                  id="ownerLine"
+                  fill="none"
+                  stroke="#dc2626"
+                  stroke-width="3"
+                  points=""
+                />
+                <!-- Renter line -->
+                <polyline
+                  id="renterLine"
+                  fill="none"
+                  stroke="#9ed649"
+                  stroke-width="3"
+                  points=""
+                />
+
+                <!-- Data points for Owner -->
+                <g id="ownerPoints"></g>
+                <!-- Data points for Renter -->
+                <g id="renterPoints"></g>
+              </svg>
+            </div>
+
+            <!-- X-axis labels -->
+            <div
+              class="x-axis-labels"
+              id="xAxisLabels"
+              style="
+                position: absolute;
+                left: 55px;
+                bottom: 0;
+                right: 0;
+                height: 25px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 12px;
+                color: #666;
+              "
+            >
+              <!-- Labels will be generated by JavaScript -->
+            </div>
+          </div>
+
+          <!-- Legend -->
+          <div
+            class="chart-legend"
+            style="
+              position: absolute;
+              top: 10px;
+              right: 10px;
+              display: flex;
+              gap: 20px;
+              font-size: 12px;
+            "
+          >
+            <div
+              class="legend-item"
+              style="display: flex; align-items: center; gap: 5px"
+            >
+              <div
+                style="
+                  width: 12px;
+                  height: 3px;
+                  background: #dc2626;
+                  border-radius: 2px;
+                "
+              ></div>
+              <span>Owner</span>
+            </div>
+            <div
+              class="legend-item"
+              style="display: flex; align-items: center; gap: 5px"
+            >
+              <div
+                style="
+                  width: 12px;
+                  height: 3px;
+                  background: #9ed649;
+                  border-radius: 2px;
+                "
+              ></div>
+              <span>Renter</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Revenue Chart -->
+  <div class="chart-container bg-white p-4 rounded shadow-sm mb-4">
+    <div
+      class="chart-header d-flex justify-content-between align-items-center mb-3"
+    >
+      <h5 class="mb-0">
+        <i class="fas fa-chart-bar text-warning me-2"></i>
+        Doanh thu
+      </h5>
+
+      <!-- Year Selection Dropdown -->
+      {{ stats_dropdown('revenueYearSelect', [ {'value': '2023', 'text': '2023',
+      'icon': 'calendar'}, {'value': '2024', 'text': '2024', 'icon':
+      'calendar'}, {'value': '2025', 'text': '2025', 'icon': 'calendar',
+      'selected': true} ]) }}
+    </div>
+
+    <div class="chart-wrapper" style="position: relative; height: 400px">
+      <!-- Chart Canvas -->
+      <div
+        class="bar-chart"
+        id="revenueChart"
+        style="position: relative; width: 100%; height: 100%"
+      >
+        <!-- Y-axis labels -->
+        <div
+          class="y-axis-labels"
+          style="
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 30px;
+            width: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+            text-align: right;
+            padding-right: 10px;
+          "
+        >
+          <div>10,000k</div>
+          <div>7,500k</div>
+          <div>5,000k</div>
+          <div>2,500k</div>
+          <div>0</div>
+        </div>
+
+        <!-- Chart area -->
+        <div
+          class="chart-area"
+          style="
+            position: absolute;
+            left: 85px;
+            top: 0;
+            right: 0;
+            bottom: 50px;
+            border-left: 2px solid #e5e7eb;
+            border-bottom: 2px solid #e5e7eb;
+          "
+        >
+          <!-- Grid lines -->
+          <div
+            class="grid-lines"
+            style="position: absolute; top: 0; left: 0; right: 0; bottom: 0"
+          >
+            <div
+              style="
+                position: absolute;
+                top: 0%;
+                left: 0;
+                right: 0;
+                height: 1px;
+                background: #f3f4f6;
+              "
+            ></div>
+            <div
+              style="
+                position: absolute;
+                top: 25%;
+                left: 0;
+                right: 0;
+                height: 1px;
+                background: #f3f4f6;
+              "
+            ></div>
+            <div
+              style="
+                position: absolute;
+                top: 50%;
+                left: 0;
+                right: 0;
+                height: 1px;
+                background: #f3f4f6;
+              "
+            ></div>
+            <div
+              style="
+                position: absolute;
+                top: 75%;
+                left: 0;
+                right: 0;
+                height: 1px;
+                background: #f3f4f6;
+              "
+            ></div>
+          </div>
+
+          <!-- Bar chart container -->
+          <div
+            id="barChartContainer"
+            style="
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              display: flex;
+              align-items: end;
+              justify-content: space-evenly;
+              padding: 0;
+              overflow-x: auto;
+              min-width: 100%;
+            "
+          >
+            <!-- Bars will be generated by JavaScript -->
+          </div>
+        </div>
+
+        <!-- X-axis labels -->
+        <div
+          class="x-axis-labels"
+          id="revenueXAxisLabels"
+          style="
+            position: absolute;
+            left: 85px;
+            bottom: 0;
+            right: 0;
+            height: 45px;
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+            font-size: 11px;
+            color: #666;
+            padding: 0;
+            overflow-x: auto;
+            min-width: 100%;
+          "
+        >
+          <!-- Labels will be generated by JavaScript -->
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div
+        class="chart-legend"
+        style="
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          display: flex;
+          gap: 15px;
+          font-size: 12px;
+          background: rgba(255, 255, 255, 0.9);
+          padding: 8px 12px;
+          border-radius: 6px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        "
+      >
+        <div
+          class="legend-item"
+          style="display: flex; align-items: center; gap: 6px"
+        >
+          <div
+            style="
+              width: 12px;
+              height: 12px;
+              background: #9ed649;
+              border-radius: 50%;
+            "
+          ></div>
+          <span>Tổng doanh thu</span>
+        </div>
+        <div
+          class="legend-item"
+          style="display: flex; align-items: center; gap: 6px"
+        >
+          <div
+            style="
+              width: 12px;
+              height: 12px;
+              background: #ef4444;
+              border-radius: 50%;
+            "
+          ></div>
+          <span>Doanh thu thuê qua đêm</span>
+        </div>
+        <div
+          class="legend-item"
+          style="display: flex; align-items: center; gap: 6px"
+        >
+          <div
+            style="
+              width: 12px;
+              height: 12px;
+              background: #fbbf24;
+              border-radius: 50%;
+            "
+          ></div>
+          <span>Doanh thu thuê theo giờ</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Homestay Table -->
+  <div class="homestay-stats bg-white p-4 rounded shadow-sm">
+    <h5 class="mb-3">Chủ phòng có doanh thu cao nhất</h5>
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Tên</th>
+            <th>Số phòng</th>
+            <th>Doanh thu</th>
+            <th>Phí dịch vụ đã trả</th>
+            <th>Đánh giá</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if stats and stats.top_homes %} {% set homestays_data =
+          stats.top_homes|from_json %} {% if homestays_data %} {% for homestay
+          in homestays_data %}
+          <tr>
+            <td>{{ homestay.name if homestay.name else 'N/A' }}</td>
+            <td>{{ homestay.home_count if homestay.home_count else 0 }}</td>
+            <td>
+              {% if homestay.revenue %} {{ '{:,.0f}'.format(homestay.revenue) }}
+              VND {% else %} 0 VND {% endif %}
+            </td>
+            <td>
+              {% if homestay.admin_commission %} {{
+              '{:,.0f}'.format(homestay.admin_commission) }} VND {% else %} 0
+              VND {% endif %}
+            </td>
+            <td>
+              <div class="rating">
+                <i class="fas fa-star text-warning"></i>
+                <span>{{ homestay.rating if homestay.rating else 0 }}</span>
+              </div>
+            </td>
+          </tr>
+          {% endfor %} {% else %}
+          <tr>
+            <td colspan="5" class="text-center text-muted">
+              Không có dữ liệu homestay
+            </td>
+          </tr>
+          {% endif %} {% else %}
+          <tr>
+            <td colspan="5" class="text-center text-muted">
+              Đang tải dữ liệu...
+            </td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

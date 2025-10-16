@@ -1,0 +1,21 @@
+{# Chart Dropdown Component - Usage Examples This file shows how to use the
+chart_dropdown macro in different scenarios #} {# Import the macro first #} {%
+from 'admin/components/chart_dropdown.html' import chart_dropdown %} {# Example
+1: Statistics Chart Period Dropdown #} {{
+chart_dropdown('bookingChartPeriodSelect', 'week', [ {'value': 'week', 'text':
+'Tuần này (7 ngày)', 'icon': 'calendar-week'}, {'value': 'month', 'text': 'Tháng
+này (30 ngày)', 'icon': 'calendar-alt'}, {'value': 'year', 'text': 'Năm này (365
+ngày)', 'icon': 'calendar'} ]) }} {# Example 2: Revenue Year Selection #} {{
+chart_dropdown('revenueYearSelect', '2025', [ {'value': '2023', 'text': '2023',
+'icon': 'calendar'}, {'value': '2024', 'text': '2024', 'icon': 'calendar'},
+{'value': '2025', 'text': '2025', 'icon': 'calendar'} ]) }} {# Example 3: User
+Chart Period with custom class and data attributes #} {{
+chart_dropdown('userChartPeriodSelect', 'week', [ {'value': 'week', 'text':
+'Tuần này (7 ngày)', 'icon': 'calendar-week'}, {'value': 'month', 'text': 'Tháng
+này (30 ngày)', 'icon': 'calendar-alt'}, {'value': 'year', 'text': 'Năm này (365
+ngày)', 'icon': 'calendar'} ], 'user-chart-dropdown', {'chart-type':
+'user-growth', 'update-url': '/admin/api/user-chart-data'}) }} {# Example 4:
+Simple Status Filter #} {{ chart_dropdown('statusFilter', 'active', [ {'value':
+'all', 'text': 'Tất cả trạng thái', 'icon': 'list'}, {'value': 'active', 'text':
+'Đang hoạt động', 'icon': 'check-circle'}, {'value': 'inactive', 'text': 'Không
+hoạt động', 'icon': 'times-circle'} ]) }}

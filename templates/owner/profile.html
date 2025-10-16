@@ -1,0 +1,1448 @@
+{% extends 'owner/base_owner.html' %}
+
+{% block title %}Tài khoản{% endblock %}
+
+{% block page_title %}Tài khoản{% endblock %}
+{% block page_subtitle %}Quản lý thông tin tài khoản của bạn{% endblock %}
+
+{% block page_css %}
+<style>
+    .profile-container {
+        margin: 0 2rem 2rem 2rem;
+    }
+    
+    .profile-sections {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+    
+    .profile-section {
+        background: white;
+        border-radius: 12px;
+        padding: 2.5rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        border: 1px solid #f0f0f0;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .profile-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #E0EC9B 0%, #C3D600 100%);
+    }
+    
+    .profile-section:hover {
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        transform: translateY(-2px);
+    }
+    
+    .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #101917;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f8f9fa;
+    }
+    
+    .section-title i {
+        color: #C3D600;
+        font-size: 1.2rem;
+    }
+    
+    .avatar-section {
+        display: flex;
+        align-items: center;
+        gap: 2.5rem;
+        margin-bottom: 2.5rem;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border-radius: 12px;
+        border: 1px solid #f0f0f0;
+    }
+    
+    .avatar-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .avatar-circle {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #E0EC9B 0%, #C3D600 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border: 4px solid white;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .avatar-circle:hover {
+        transform: scale(1.05);
+        box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+    }
+    
+    .avatar-circle::before {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #E0EC9B, #C3D600, #9ed649);
+        z-index: -1;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .avatar-circle:hover::before {
+        opacity: 1;
+    }
+    
+    .avatar-circle img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+    
+    .avatar-icon {
+        font-size: 48px;
+        color: white;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .upload-btn {
+        background: linear-gradient(135deg, #C3D600 0%, #9ed649 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-size: 11px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(195, 214, 0, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .upload-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(195, 214, 0, 0.4);
+        background: linear-gradient(135deg, #9ed649 0%, #8bc34a 100%);
+    }
+    
+    .avatar-info {
+        text-align: center;
+        flex: 1;
+    }
+    
+    .user-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #101917;
+        margin-bottom: 0.5rem;
+    }
+    
+    .user-role {
+        color: #7C7C7C;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+    
+    .user-stats {
+        display: flex;
+        gap: 2rem;
+        justify-content: center;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #C3D600;
+        display: block;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+        color: #7C7C7C;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.2rem;
+        margin-bottom: 1.5rem;
+        align-items: end;
+    }
+    
+    .form-grid.three-col {
+        grid-template-columns: 1fr 1fr 0.9fr;
+        gap: 1.2rem;
+    }
+    
+    .form-grid.full-width {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .form-label {
+        font-size: 10px;
+        font-weight: 500;
+        color: #7C7C7C;
+        margin: 0;
+    }
+    
+    .form-input {
+        padding: 15px 18px;
+        border: 1.5px solid #e8e8e8;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #101917;
+        background: #fafafa;
+        transition: all 0.3s ease;
+        position: relative;
+        height: 48px;
+        box-sizing: border-box;
+    }
+    
+    .name-input {
+        padding: 15px 18px;
+        border: 1.5px solid #e8e8e8;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #101917;
+        background: #fafafa;
+        transition: all 0.3s ease;
+        position: relative;
+        height: 48px;
+        box-sizing: border-box;
+    }
+    
+    .name-input:focus {
+        outline: none;
+        border-color: #C3D600;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(195, 214, 0, 0.1);
+        transform: translateY(-1px);
+    }
+    
+    .name-input:hover {
+        border-color: #d0d0d0;
+        background: white;
+    }
+    
+    .gender-input {
+        padding: 15px 16px;
+        border: 1.5px solid #e8e8e8;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #101917;
+        background: #fafafa;
+        transition: all 0.3s ease;
+        position: relative;
+        height: 48px;
+        box-sizing: border-box;
+        appearance: none;
+    }
+    
+    .gender-input:focus {
+        outline: none;
+        border-color: #C3D600;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(195, 214, 0, 0.1);
+        transform: translateY(-1px);
+    }
+    
+    .gender-input:hover {
+        border-color: #d0d0d0;
+        background: white;
+    }
+    
+    .gender-field,
+    .nationality-field {
+        position: relative;
+    }
+    
+    .gender-field::after,
+    .nationality-field::after {
+        content: '▼';
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #7C7C7C;
+        font-size: 10px;
+        pointer-events: none;
+        z-index: 1;
+        transition: all 0.3s ease;
+        line-height: 1;
+        vertical-align: middle;
+    }
+    
+    .gender-field:hover::after,
+    .nationality-field:hover::after {
+        color: #C3D600;
+        transform: translateY(-50%) scale(1.1);
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: #C3D600;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(195, 214, 0, 0.1);
+        transform: translateY(-1px);
+    }
+    
+    .form-input:hover {
+        border-color: #d0d0d0;
+        background: white;
+    }
+    
+    .form-input.highlighted {
+        background: linear-gradient(135deg, #E0EC9B 0%, #f0f8d0 100%);
+        border-color: #C3D600;
+        box-shadow: 0 4px 12px rgba(224, 236, 155, 0.3);
+    }
+    
+    .birth-date-input {
+        padding: 15px 18px;
+        border: 1.5px solid #e8e8e8;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #101917;
+        background: #fafafa;
+        transition: all 0.3s ease;
+        position: relative;
+        height: 48px;
+        box-sizing: border-box;
+        width: 100%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+    }
+    
+    .birth-date-input:hover {
+        border-color: #C3D600;
+        background: white;
+    }
+    
+    .birth-date-input:focus {
+        outline: none;
+        border-color: #C3D600;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(195, 214, 0, 0.1);
+        transform: translateY(-1px);
+    }
+    
+    .birth-date-input-container {
+        position: relative;
+        width: 100%;
+    }
+    
+    .birth-date-icon {
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 16px;
+        color: #7C7C7C;
+        pointer-events: none;
+        transition: all 0.3s ease;
+        z-index: 1;
+    }
+    
+    .birth-date-input:hover + .birth-date-icon {
+        color: #C3D600;
+        transform: translateY(-50%) scale(1.1);
+    }
+    
+    .birth-date-input:focus + .birth-date-icon {
+        color: #C3D600;
+        transform: translateY(-50%) scale(1.1);
+    }
+    
+    .birth-date-input-group {
+        position: relative;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        min-width: 35px;
+    }
+    
+    .birth-date-input-group:first-child {
+        min-width: 30px;
+    }
+    
+    .birth-date-input-group:nth-child(3) {
+        min-width: 30px;
+    }
+    
+    .birth-date-input-group:last-child {
+        min-width: 50px;
+    }
+    
+    .birth-date-select {
+        width: 100%;
+        appearance: none;
+        background: transparent;
+        border: none;
+        padding: 8px 4px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #101917;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        outline: none;
+    }
+    
+    .birth-date-select:focus {
+        outline: none;
+        color: #C3D600;
+        font-weight: 600;
+    }
+    
+    .birth-date-select:hover {
+        color: #C3D600;
+    }
+    
+    .birth-date-select:disabled {
+        background: transparent;
+        color: #6c757d;
+        cursor: not-allowed;
+    }
+    
+
+    
+    .birth-date-slash {
+        color: #7C7C7C;
+        font-size: 12px;
+        font-weight: 400;
+        user-select: none;
+        margin: 0 2px;
+        flex-shrink: 0;
+    }
+    
+    .email-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .email-input {
+        flex: 1;
+        padding: 15px 60px 15px 16px;
+        background: linear-gradient(135deg, #E0EC9B 0%, #f0f8d0 100%);
+        border: 1.5px solid #C3D600;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #101917;
+        box-shadow: 0 2px 8px rgba(224, 236, 155, 0.2);
+        height: 48px;
+        box-sizing: border-box;
+        transition: all 0.3s ease;
+    }
+    
+    .verified-badge {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        background: linear-gradient(135deg, #34C759 0%, #28a745 100%);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 15px;
+        font-size: 9px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        box-shadow: 0 1px 4px rgba(52, 199, 89, 0.3);
+        animation: verified-glow 2s ease-in-out infinite alternate;
+    }
+    
+    @keyframes verified-glow {
+        from { box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3); }
+        to { box-shadow: 0 4px 16px rgba(52, 199, 89, 0.5); }
+    }
+    
+    .verified-icon {
+        font-size: 10px;
+        color: white;
+    }
+    
+    .verified-text {
+        font-size: 8px;
+        font-weight: 700;
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f8f9fa;
+    }
+    
+    .edit-toggle-btn {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+    }
+    
+    .edit-toggle-btn:hover {
+        background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(108, 117, 125, 0.4);
+    }
+    
+    .edit-toggle-btn.editing {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    }
+    
+    .edit-toggle-btn.editing:hover {
+        background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+        box-shadow: 0 6px 16px rgba(220, 53, 69, 0.4);
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #C3D600 0%, #9ed649 100%);
+        border: none;
+        color: white;
+        padding: 14px 28px;
+        border-radius: 25px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(195, 214, 0, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-primary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-primary:hover::before {
+        left: 100%;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #9ed649 0%, #8bc34a 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(195, 214, 0, 0.4);
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #34C759 0%, #28a745 100%);
+        border: none;
+        color: white;
+        padding: 14px 28px;
+        border-radius: 25px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(52, 199, 89, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-secondary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-secondary:hover::before {
+        left: 100%;
+    }
+    
+    .btn-secondary:hover {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(52, 199, 89, 0.4);
+    }
+    
+    .password-field {
+        position: relative;
+    }
+    
+    .password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #7C7C7C;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    
+    .delete-section {
+        border-top: 1px solid #e0e0e0;
+        padding-top: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .delete-text {
+        color: #7C7C7C;
+        font-size: 12px;
+        font-weight: 500;
+        margin-bottom: 1rem;
+    }
+    
+    .section-divider {
+        height: 1px;
+        background: #7C7C7C;
+        opacity: 0.2;
+        margin: 2rem 0;
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border: none;
+        color: white;
+        padding: 14px 28px;
+        border-radius: 25px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-danger::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-danger:hover::before {
+        left: 100%;
+    }
+    
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(220, 53, 69, 0.4);
+    }
+    
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+    
+    .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #C3D600;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .fade-in {
+        animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .success-message {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        display: none;
+        align-items: center;
+        gap: 0.5rem;
+        animation: slideDown 0.3s ease-out;
+    }
+    
+    @keyframes slideDown {
+        from { transform: translateY(-100%); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
+    @media (max-width: 768px) {
+        .profile-container {
+            margin: 0 1rem 1rem 1rem;
+        }
+        
+        .profile-section {
+            padding: 1.5rem;
+        }
+        
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .form-grid.three-col {
+            grid-template-columns: 1fr;
+        }
+        
+        .avatar-section {
+            flex-direction: column;
+            text-align: center;
+            gap: 1.5rem;
+        }
+        
+        .user-stats {
+            gap: 1rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .avatar-circle {
+            width: 100px;
+            height: 100px;
+        }
+        
+        .user-name {
+            font-size: 1.3rem;
+        }
+    }
+</style>
+
+<!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<style>
+    /* Custom Flatpickr styling */
+    .flatpickr-calendar {
+        border-radius: 12px !important;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
+        border: 1px solid #e8e8e8 !important;
+    }
+    
+    .flatpickr-day.selected {
+        background: #C3D600 !important;
+        border-color: #C3D600 !important;
+    }
+    
+    .flatpickr-day:hover {
+        background: #E0EC9B !important;
+        border-color: #E0EC9B !important;
+    }
+    
+    .flatpickr-months .flatpickr-month {
+        background: #C3D600 !important;
+        color: white !important;
+    }
+    
+    .flatpickr-current-month {
+        color: white !important;
+    }
+    
+    .flatpickr-current-month .flatpickr-monthDropdown-months {
+        background: #C3D600 !important;
+    }
+    
+    /* Enhanced year input styling */
+    .flatpickr-current-month input.cur-year {
+        background: rgba(255,255,255,0.2) !important;
+        color: white !important;
+        font-weight: bold !important;
+        font-size: 18px !important;
+        width: 80px !important;
+        text-align: center !important;
+        border: 2px solid rgba(255,255,255,0.4) !important;
+        border-radius: 6px !important;
+        padding: 4px 8px !important;
+        cursor: text !important;
+        margin: 0 5px !important;
+    }
+    
+    .flatpickr-current-month input.cur-year:hover {
+        background: rgba(255,255,255,0.3) !important;
+        border-color: rgba(255,255,255,0.7) !important;
+        transform: scale(1.05) !important;
+    }
+    
+    .flatpickr-current-month input.cur-year:focus {
+        background: rgba(255,255,255,0.4) !important;
+        border-color: white !important;
+        outline: none !important;
+        transform: scale(1.05) !important;
+        box-shadow: 0 0 0 2px rgba(255,255,255,0.3) !important;
+    }
+    
+    /* Position adjustments */
+    .flatpickr-calendar {
+        margin-top: 5px !important;
+        z-index: 9999 !important;
+    }
+    
+    /* Make month dropdown more visible */
+    .flatpickr-monthDropdown-months {
+        color: white !important;
+        font-weight: bold !important;
+        background: rgba(255,255,255,0.1) !important;
+        border: 2px solid rgba(255,255,255,0.4) !important;
+        border-radius: 6px !important;
+        padding: 4px 8px !important;
+        font-size: 16px !important;
+        cursor: pointer !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+        height: 32px !important;
+        min-width: 80px !important;
+        box-sizing: border-box !important;
+    }
+    
+    .flatpickr-monthDropdown-months:hover {
+        color: white !important;
+        background: rgba(255,255,255,0.2) !important;
+        border-color: rgba(255,255,255,0.7) !important;
+        transform: scale(1.02) !important;
+    }
+    
+    .flatpickr-monthDropdown-months:focus {
+        color: white !important;
+        background: rgba(255,255,255,0.3) !important;
+        border-color: white !important;
+        outline: none !important;
+        box-shadow: 0 0 0 2px rgba(255,255,255,0.3) !important;
+    }
+    
+    /* Fix month dropdown options */
+    .flatpickr-monthDropdown-months option {
+        background: white !important;
+        color: #333 !important;
+        padding: 5px !important;
+    }
+    
+    /* Make the navigation arrows more visible */
+    .flatpickr-prev-month,
+    .flatpickr-next-month {
+        color: white !important;
+        font-size: 18px !important;
+        padding: 5px !important;
+    }
+    
+    .flatpickr-prev-month:hover,
+    .flatpickr-next-month:hover {
+        color: rgba(255,255,255,0.8) !important;
+        background: rgba(255,255,255,0.1) !important;
+        border-radius: 4px !important;
+    }
+    
+    /* Year dropdown styling */
+    .flatpickr-year-dropdown {
+        background: rgba(255,255,255,0.1) !important;
+        color: white !important;
+        font-weight: bold !important;
+        font-size: 16px !important;
+        width: 80px !important;
+        text-align: center !important;
+        border: 2px solid rgba(255,255,255,0.4) !important;
+        border-radius: 6px !important;
+        padding: 4px 8px !important;
+        cursor: pointer !important;
+        margin: 0 5px !important;
+        height: 32px !important;
+        box-sizing: border-box !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+    }
+    
+    .flatpickr-year-dropdown:hover {
+        background: rgba(255,255,255,0.2) !important;
+        border-color: rgba(255,255,255,0.7) !important;
+        transform: scale(1.02) !important;
+    }
+    
+    .flatpickr-year-dropdown:focus {
+        background: rgba(255,255,255,0.3) !important;
+        border-color: white !important;
+        outline: none !important;
+        box-shadow: 0 0 0 2px rgba(255,255,255,0.3) !important;
+    }
+    
+    /* Style the dropdown options */
+    .flatpickr-year-dropdown option {
+        background: white !important;
+        color: #333 !important;
+        padding: 5px !important;
+    }
+    
+    .flatpickr-year-dropdown option:hover {
+        background: #f0f0f0 !important;
+    }
+    
+    /* Hide year navigation arrows when using dropdown */
+    .flatpickr-current-month .arrowUp,
+    .flatpickr-current-month .arrowDown {
+        display: none !important;
+    }
+    
+    /* Ensure year container doesn't show arrows */
+    .flatpickr-current-month .numInputWrapper .arrowUp,
+    .flatpickr-current-month .numInputWrapper .arrowDown {
+        display: none !important;
+    }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="profile-container">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div style="margin-bottom: 1rem;">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'info' if category == 'info' else 'warning' if category == 'warning' else 'danger' }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-{{ 'check-circle' if category == 'success' else 'info-circle' if category == 'info' else 'exclamation-triangle' if category == 'warning' else 'exclamation-circle' }}"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="profile-sections">
+        <!-- Personal Information Section -->
+        <div class="profile-section">
+            <div class="section-header">
+                <h3 class="section-title">
+                    <i class="fas fa-user"></i>
+                    Thông tin cá nhân
+                </h3>
+                <button type="button" class="edit-toggle-btn" id="editToggleBtn" onclick="toggleEditMode()">
+                    <i class="fas fa-edit"></i> Chỉnh sửa
+                </button>
+            </div>
+            
+            <form method="POST" enctype="multipart/form-data" id="personalInfoForm">
+                <!-- Avatar Section -->
+                <div class="avatar-section">
+                    <div class="avatar-container">
+                        <div class="avatar-circle">
+                            {% if current_user.avatar %}
+                                <img src="{{ url_for('static', filename=current_user.avatar) }}" alt="Avatar">
+                            {% else %}
+                                <i class="fas fa-user avatar-icon"></i>
+                            {% endif %}
+                        </div>
+                        <input type="file" id="avatar" name="avatar" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
+                        <label for="avatar" class="upload-btn" id="avatarUploadBtn" style="display: none;">Chọn Ảnh</label>
+                    </div>
+                    
+                    <div class="avatar-info">
+                        <div class="user-name">{{ current_user.first_name or 'Nguyễn' }} {{ current_user.last_name or 'Trần' }}</div>
+                        <div class="user-role">Chủ sở hữu • {{ current_user.username }}</div>
+                        
+                        <div class="user-stats">
+                            <div class="stat-item">
+                                <span class="stat-number">{{ current_user.rooms|length if current_user.rooms else '0' }}</span>
+                                <span class="stat-label">Phòng</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">4.8</span>
+                                <span class="stat-label">Đánh giá</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">{{ current_user.created_at.strftime('%Y') if current_user.created_at else '2024' }}</span>
+                                <span class="stat-label">Tham gia</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Name Fields and Gender -->
+                <div class="form-grid three-col">
+                    <div class="form-field">
+                        <label class="form-label">Họ</label>
+                        <input type="text" name="first_name" class="name-input" value="{{ current_user.first_name or 'Nguyễn' }}" placeholder="Nguyễn" disabled>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">Tên</label>
+                        <input type="text" name="last_name" class="name-input" value="{{ current_user.last_name or 'Trần' }}" placeholder="Huy" disabled>
+                    </div>
+                    <div class="form-field gender-field">
+                        <label class="form-label">Giới tính</label>
+                        <select name="gender" class="gender-input" disabled>
+                            <option value="Nam" {{ 'selected' if current_user.gender == 'Nam' else '' }}>Nam</option>
+                            <option value="Nữ" {{ 'selected' if current_user.gender == 'Nữ' else '' }}>Nữ</option>
+                            <option value="Khác" {{ 'selected' if current_user.gender == 'Khác' else '' }}>Khác</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Birth Date, Phone, and Nationality -->
+                <div class="form-grid three-col">
+                    <div class="form-field">
+                        <label class="form-label">Ngày sinh</label>
+                        <div class="birth-date-input-container">
+                            <input type="text" 
+                                   id="birth_date" 
+                                   name="birth_date" 
+                                   class="birth-date-input" 
+                                   placeholder="Chọn ngày sinh"
+                                   value="{% if current_user.birth_date %}{{ current_user.birth_date.strftime('%d/%m/%Y') }}{% else %}19/01/2000{% endif %}"
+                                   readonly
+                                   disabled>
+                            <i class="fas fa-calendar-alt birth-date-icon"></i>
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label class="form-label">Số điện thoại</label>
+                        <input type="tel" name="phone" class="name-input" value="{{ current_user.phone or '937956211' }}" placeholder="937956211" disabled>
+                    </div>
+                    <div class="form-field nationality-field">
+                        <label class="form-label">Quốc tịch</label>
+                        <select name="nationality" class="gender-input" disabled>
+                            <option value="Việt Nam" {{ 'selected' if current_user.nationality == 'Việt Nam' else '' }}>Việt Nam</option>
+                            <option value="Hoa Kỳ" {{ 'selected' if current_user.nationality == 'Hoa Kỳ' else '' }}>Hoa Kỳ</option>
+                            <option value="Nhật Bản" {{ 'selected' if current_user.nationality == 'Nhật Bản' else '' }}>Nhật Bản</option>
+                            <option value="Hàn Quốc" {{ 'selected' if current_user.nationality == 'Hàn Quốc' else '' }}>Hàn Quốc</option>
+                            <option value="Trung Quốc" {{ 'selected' if current_user.nationality == 'Trung Quốc' else '' }}>Trung Quốc</option>
+                            <option value="Singapore" {{ 'selected' if current_user.nationality == 'Singapore' else '' }}>Singapore</option>
+                            <option value="Malaysia" {{ 'selected' if current_user.nationality == 'Malaysia' else '' }}>Malaysia</option>
+                            <option value="Thái Lan" {{ 'selected' if current_user.nationality == 'Thái Lan' else '' }}>Thái Lan</option>
+                            <option value="Philippines" {{ 'selected' if current_user.nationality == 'Philippines' else '' }}>Philippines</option>
+                            <option value="Indonesia" {{ 'selected' if current_user.nationality == 'Indonesia' else '' }}>Indonesia</option>
+                            <option value="Úc" {{ 'selected' if current_user.nationality == 'Úc' else '' }}>Úc</option>
+                            <option value="Canada" {{ 'selected' if current_user.nationality == 'Canada' else '' }}>Canada</option>
+                            <option value="Anh" {{ 'selected' if current_user.nationality == 'Anh' else '' }}>Anh</option>
+                            <option value="Pháp" {{ 'selected' if current_user.nationality == 'Pháp' else '' }}>Pháp</option>
+                            <option value="Đức" {{ 'selected' if current_user.nationality == 'Đức' else '' }}>Đức</option>
+                            <option value="Khác" {{ 'selected' if current_user.nationality == 'Khác' else '' }}>Khác</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Email -->
+                <div class="form-grid" style="margin-bottom: 1.5rem;">
+                    <div class="form-field">
+                        <label class="form-label">Email</label>
+                        <div class="email-container">
+                            <input type="email" name="email" class="email-input" value="{{ current_user.email or 'owner@gmail.com' }}" required disabled>
+                            <div class="verified-badge">
+                                <div class="verified-icon">
+                                    <i class="fas fa-shield-check"></i>
+                                </div>
+                                <span class="verified-text">Đã xác thực</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <!-- Empty field for spacing -->
+                    </div>
+                </div>
+                
+                <!-- Address -->
+                <div class="form-field">
+                    <label class="form-label">Địa chỉ</label>
+                    <input type="text" name="address" class="form-input" value="{{ current_user.address or '197/7, đường 11, phường Linh Xuân, Quận Thủ Đức, Hồ Chí Minh' }}" placeholder="Nhập địa chỉ của bạn" disabled>
+                </div>
+                
+                <div class="action-buttons" id="saveButtons" style="display: none;">
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Lưu thay đổi
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="cancelEdit()">
+                        <i class="fas fa-times"></i> Hủy
+                    </button>
+                </div>
+            </form>
+        </div>
+
+
+    </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+</div>
+
+<div class="success-message" id="successMessage">
+    <i class="fas fa-check-circle"></i>
+    <span>Thông tin đã được cập nhật thành công!</span>
+</div>
+
+<script>
+// Add fade-in animation to sections
+document.addEventListener('DOMContentLoaded', function() {
+    const sections = document.querySelectorAll('.profile-section');
+    sections.forEach((section, index) => {
+        setTimeout(() => {
+            section.classList.add('fade-in');
+        }, index * 100);
+    });
+});
+
+function showLoading() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+function showSuccess(message) {
+    const successDiv = document.getElementById('successMessage');
+    successDiv.querySelector('span').textContent = message;
+    successDiv.style.display = 'flex';
+    setTimeout(() => {
+        successDiv.style.display = 'none';
+    }, 3000);
+}
+
+function previewAvatar(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const avatarCircle = document.querySelector('.avatar-circle');
+            avatarCircle.style.transform = 'scale(0.8)';
+            
+            setTimeout(() => {
+                avatarCircle.innerHTML = `<img src="${e.target.result}" alt="Avatar Preview">`;
+                avatarCircle.style.transform = 'scale(1)';
+            }, 150);
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+let isEditMode = false;
+
+function toggleEditMode() {
+    const editBtn = document.getElementById('editToggleBtn');
+    const saveButtons = document.getElementById('saveButtons');
+    const formInputs = document.querySelectorAll('.form-input, .name-input, .gender-input, .birth-date-input');
+    const avatarInput = document.getElementById('avatar');
+    const avatarUploadBtn = document.getElementById('avatarUploadBtn');
+    
+    isEditMode = !isEditMode;
+    
+    if (isEditMode) {
+        // Enable edit mode
+        editBtn.innerHTML = '<i class="fas fa-times"></i> Hủy chỉnh sửa';
+        editBtn.classList.add('editing');
+        saveButtons.style.display = 'flex';
+        avatarUploadBtn.style.display = 'block';
+        
+        formInputs.forEach(input => {
+            if (input.name !== 'email') { // Keep email readonly
+                input.disabled = false;
+            }
+        });
+        
+        avatarInput.disabled = false;
+        
+        // Add edit mode animation
+        document.querySelector('.profile-section').style.borderColor = '#C3D600';
+        document.querySelector('.profile-section').style.boxShadow = '0 8px 24px rgba(195, 214, 0, 0.15)';
+        
+    } else {
+        // Disable edit mode
+        editBtn.innerHTML = '<i class="fas fa-edit"></i> Chỉnh sửa';
+        editBtn.classList.remove('editing');
+        saveButtons.style.display = 'none';
+        avatarUploadBtn.style.display = 'none';
+        
+        formInputs.forEach(input => {
+            input.disabled = true;
+        });
+        
+        avatarInput.disabled = true;
+        
+        // Remove edit mode animation
+        document.querySelector('.profile-section').style.borderColor = '#f0f0f0';
+        document.querySelector('.profile-section').style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+    }
+}
+
+function cancelEdit() {
+    // Reset form to original values
+    const form = document.getElementById('personalInfoForm');
+    form.reset();
+    
+    // Exit edit mode
+    toggleEditMode();
+    
+    showSuccess('Đã hủy chỉnh sửa');
+}
+
+
+
+// Form validation with animations
+document.getElementById('personalInfoForm').addEventListener('submit', function(e) {
+    if (!isEditMode) {
+        e.preventDefault();
+        return; // Don't submit if not in edit mode
+    }
+    
+    const requiredFields = this.querySelectorAll('input[required]');
+    let isValid = true;
+    
+    requiredFields.forEach(field => {
+        if (!field.disabled && !field.value.trim()) {
+            field.style.borderColor = '#dc3545';
+            field.style.boxShadow = '0 0 0 3px rgba(220, 53, 69, 0.1)';
+            field.style.animation = 'shake 0.5s ease-in-out';
+            isValid = false;
+        } else {
+            field.style.borderColor = '#e8e8e8';
+            field.style.boxShadow = 'none';
+            field.style.animation = 'none';
+        }
+    });
+    
+    if (!isValid) {
+        e.preventDefault();
+        return;
+    }
+    
+    // If validation passes, show loading and allow form to submit normally
+    showLoading();
+    
+    // Form will submit normally to the server
+    // The server will handle the response and redirect
+});
+
+// Add shake animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+`;
+document.head.appendChild(style);
+</script>
+
+<!-- Flatpickr JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+
+<script>
+// Initialize Flatpickr for birth date
+let birthDatePicker;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const birthDateInput = document.getElementById('birth_date');
+    
+    if (birthDateInput) {
+        // Initialize Flatpickr with year dropdown
+        birthDatePicker = flatpickr(birthDateInput, {
+            dateFormat: "d/m/Y",
+            maxDate: "today",
+            minDate: "01/01/1940",
+            defaultDate: birthDateInput.value || "19/01/2000",
+            clickOpens: false, // Initially disabled
+            allowInput: true,
+            position: "below left",
+            static: false,
+            monthSelectorType: "dropdown",
+            plugins: [
+                function(fp) {
+                    return {
+                        onReady: function() {
+                            // Create year dropdown
+                            setTimeout(() => {
+                                const yearInput = fp.currentYearElement;
+                                if (yearInput) {
+                                    // Create a select element for years
+                                    const yearSelect = document.createElement('select');
+                                    yearSelect.className = 'flatpickr-year-dropdown';
+                                    yearSelect.style.cssText = `
+                                        background: rgba(255,255,255,0.1) !important;
+                                        color: white !important;
+                                        font-weight: bold !important;
+                                        font-size: 16px !important;
+                                        width: 80px !important;
+                                        text-align: center !important;
+                                        border: 2px solid rgba(255,255,255,0.4) !important;
+                                        border-radius: 6px !important;
+                                        padding: 4px 8px !important;
+                                        cursor: pointer !important;
+                                        margin: 0 5px !important;
+                                        height: 32px !important;
+                                        box-sizing: border-box !important;
+                                        appearance: none !important;
+                                        -webkit-appearance: none !important;
+                                        -moz-appearance: none !important;
+                                    `;
+                                    
+                                    // Add years from 1940 to current year
+                                    const currentYear = new Date().getFullYear();
+                                    for (let year = currentYear; year >= 1940; year--) {
+                                        const option = document.createElement('option');
+                                        option.value = year;
+                                        option.textContent = year;
+                                        option.style.color = 'black';
+                                        option.style.background = 'white';
+                                        if (year.toString() === yearInput.value) {
+                                            option.selected = true;
+                                        }
+                                        yearSelect.appendChild(option);
+                                    }
+                                    
+                                    // Add change event
+                                    yearSelect.addEventListener('change', function() {
+                                        fp.changeYear(parseInt(this.value));
+                                    });
+                                    
+                                    // Replace the year input with select
+                                    yearInput.parentNode.replaceChild(yearSelect, yearInput);
+                                    
+                                    // Hide year navigation arrows since we have dropdown
+                                    setTimeout(() => {
+                                        const calendar = fp.calendarContainer;
+                                        const yearArrows = calendar.querySelectorAll('.arrowUp, .arrowDown');
+                                        yearArrows.forEach(arrow => {
+                                            if (arrow.closest('.flatpickr-current-month')) {
+                                                arrow.style.display = 'none';
+                                            }
+                                        });
+                                        
+                                        // Also hide any year increment/decrement buttons
+                                        const yearBtns = calendar.querySelectorAll('[class*="year"] .arrowUp, [class*="year"] .arrowDown');
+                                        yearBtns.forEach(btn => btn.style.display = 'none');
+                                    }, 200);
+                                }
+                            }, 100);
+                        }
+                    };
+                }
+            ],
+            onChange: function(selectedDates, dateStr, instance) {
+                birthDateInput.value = dateStr;
+            }
+        });
+        
+        console.log('Flatpickr initialized:', birthDatePicker);
+    }
+});
+
+// Update the existing toggleEditMode function to handle date picker
+const originalToggleEditMode = toggleEditMode;
+toggleEditMode = function() {
+    const birthDateInput = document.getElementById('birth_date');
+    
+    // Call the original function
+    originalToggleEditMode();
+    
+    // Handle date picker enable/disable
+    if (birthDatePicker) {
+        if (isEditMode) {
+            // Enable date picker
+            birthDatePicker.set('clickOpens', true);
+            birthDateInput.style.cursor = 'pointer';
+            birthDateInput.removeAttribute('readonly');
+            console.log('Date picker enabled');
+        } else {
+            // Disable date picker
+            birthDatePicker.set('clickOpens', false);
+            birthDateInput.style.cursor = 'default';
+            birthDateInput.setAttribute('readonly', 'readonly');
+            console.log('Date picker disabled');
+        }
+    }
+};
+</script>
+
+{% endblock %} 

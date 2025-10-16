@@ -1,0 +1,43 @@
+{#
+  Chart Dropdown Component - Reusable dropdown with chart-navbar styling
+  
+  This is a Jinja2 macro for creating reusable chart dropdowns
+  
+  Usage:
+  {{ chart_dropdown('myDropdown', 'week', [
+    {'value': 'week', 'text': 'Tuần này (7 ngày)', 'icon': 'calendar-week'},
+    {'value': 'month', 'text': 'Tháng này (30 ngày)', 'icon': 'calendar-alt'}
+  ]) }}
+  
+  Or with additional parameters:
+  {{ chart_dropdown('myDropdown', 'week', options, 'my-custom-class', {'chart-type': 'user-growth'}) }}
+#}
+
+{% macro chart_dropdown(dropdown_id, selected_value='', options=[], dropdown_class='', data_attributes={}) %}
+<!-- Chart Navigation Dropdown Component -->
+<div class="chart-navbar {{ dropdown_class }}">
+    <select 
+        id="{{ dropdown_id }}" 
+        class="form-select form-select-sm"
+        {% if data_attributes %}
+            {% for attr, value in data_attributes.items() %}
+                data-{{ attr }}="{{ value }}"
+            {% endfor %}
+        {% endif %}
+    >
+        {% for option in options %}
+            <option 
+                value="{{ option.value }}"
+                {% if option.icon %}
+                    data-custom-properties='{"icon": "{{ option.icon }}"}'
+                {% endif %}
+                {% if (selected_value and option.value == selected_value) or option.get('selected', False) %}
+                    selected
+                {% endif %}
+            >
+                {{ option.text }}
+            </option>
+        {% endfor %}
+    </select>
+</div>
+{% endmacro %}

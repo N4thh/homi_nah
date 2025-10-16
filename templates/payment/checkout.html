@@ -1,0 +1,388 @@
+{% extends "base.html" %}
+
+{% block title %}Thanh toán - {{ booking.home.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .payment-method {
+        margin-bottom: 20px;
+    }
+    .qr-code-container {
+        text-align: center;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .payment-status {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 8px;
+    }
+    .payment-status.pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    .payment-status.success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .payment-status.error {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ 'danger' if category in ['danger', 'error'] else category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Thông tin booking -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-credit-card me-2"></i>
+                        Thông tin đặt phòng
+                    </h4>
+                    <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#bookingModifyForm">
+                        <i class="fas fa-edit me-1"></i>
+                        Chỉnh sửa
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>{{ booking.home.title }}</h5>
+                            <p class="text-muted">
+                                <i class="fas fa-map-marker-alt me-2"></i>
+                                {{ booking.home.address }}
+                            </p>
+                            <p class="text-muted">
+                                <i class="fas fa-user me-2"></i>
+                                Chủ nhà: {{ booking.home.owner.full_name }}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="booking-details">
+                                <p><strong>Ngày đặt:</strong> {{ booking.start_time.strftime('%d/%m/%Y') }}</p>
+                                <p><strong>Giờ bắt đầu:</strong> {{ booking.start_time.strftime('%H:%M') }}</p>
+                                <p><strong>Giờ kết thúc:</strong> {{ booking.end_time.strftime('%H:%M') }}</p>
+                                <p><strong>Loại đặt:</strong> 
+                                    {% if booking.booking_type == 'hourly' %}
+                                        Theo giờ ({{ booking.total_hours }} giờ)
+                                    {% else %}
+                                        Theo ngày ({{ (booking.end_time - booking.start_time).days }} ngày)
+                                    {% endif %}
+                                </p>
+                                {% if booking.booking_type == 'hourly' %}
+                                    <p><strong>Chi tiết giá:</strong></p>
+                                    <ul class="mb-0">
+                                        {% set home = booking.home %}
+                                        {% if booking.total_hours <= 2 and home.price_first_2_hours %}
+                                            <li>2 giờ đầu: {{ "{:,.0f}".format(home.price_first_2_hours) }} VND</li>
+                                        {% elif booking.total_hours > 2 and home.price_first_2_hours and home.price_per_additional_hour %}
+                                            <li>2 giờ đầu: {{ "{:,.0f}".format(home.price_first_2_hours) }} VND</li>
+                                            <li>{{ booking.total_hours - 2 }} giờ tiếp theo: {{ "{:,.0f}".format((booking.total_hours - 2) * home.price_per_additional_hour) }} VND</li>
+                                        {% elif home.price_per_hour %}
+                                            <li>{{ booking.total_hours }} giờ: {{ "{:,.0f}".format(booking.total_hours * home.price_per_hour) }} VND</li>
+                                        {% endif %}
+                                    </ul>
+                                {% elif booking.booking_type == 'daily' %}
+                                    <p><strong>Chi tiết giá:</strong></p>
+                                    <ul class="mb-0">
+                                        {% set home = booking.home %}
+                                        {% set price = home.price_per_day if home.price_per_day and home.price_per_day > 0 else home.price_per_night %}
+                                        <li>{{ (booking.end_time - booking.start_time).days }} ngày × {{ "{:,.0f}".format(price) }} VND/ngày</li>
+                                    </ul>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Form chỉnh sửa booking -->
+                    <div class="collapse mt-3" id="bookingModifyForm">
+                        <div class="card border-primary">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-edit me-2"></i>
+                                    Chỉnh sửa thông tin đặt phòng
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <form id="modify-booking-form" method="POST" action="{{ url_for('payment.modify_booking', booking_id=booking.id) }}">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="booking_type" class="form-label">Loại đặt phòng</label>
+                                                <select class="form-select" id="booking_type" name="booking_type" onchange="updateBookingForm()">
+                                                    <option value="daily" {% if booking.booking_type == 'daily' %}selected{% endif %}>Theo ngày</option>
+                                                    <option value="hourly" {% if booking.booking_type == 'hourly' %}selected{% endif %}>Theo giờ</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="guests" class="form-label">Số khách</label>
+                                                <input type="number" class="form-control" id="guests" name="guests" min="1" max="{{ booking.home.max_guests }}" value="1">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Daily booking fields -->
+                                    <div id="daily-fields" class="row" {% if booking.booking_type == 'hourly' %}style="display: none;"{% endif %}>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="start_date" class="form-label">Ngày nhận phòng</label>
+                                                <input type="date" class="form-control" id="start_date" name="start_date" 
+                                                       value="{{ booking.start_time.strftime('%Y-%m-%d') }}" 
+                                                       min="{{ min_date.strftime('%Y-%m-%d') }}">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="duration_daily" class="form-label">Số ngày thuê</label>
+                                                <input type="number" class="form-control" id="duration_daily" name="duration_daily" 
+                                                       min="1" value="{{ (booking.end_time - booking.start_time).days }}" onchange="updatePrice()">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Hourly booking fields -->
+                                    <div id="hourly-fields" class="row" {% if booking.booking_type == 'daily' %}style="display: none;"{% endif %}>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="start_date_hourly" class="form-label">Ngày thuê</label>
+                                                <input type="date" class="form-control" id="start_date_hourly" name="start_date_hourly" 
+                                                       value="{{ booking.start_time.strftime('%Y-%m-%d') }}"
+                                                       min="{{ min_date.strftime('%Y-%m-%d') }}">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="start_time" class="form-label">Giờ bắt đầu</label>
+                                                <input type="time" class="form-control" id="start_time" name="start_time" 
+                                                       value="{{ booking.start_time.strftime('%H:%M') }}">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="duration_hourly" class="form-label">Số giờ thuê</label>
+                                                <input type="number" class="form-control" id="duration_hourly" name="duration_hourly" 
+                                                       min="2" value="{{ booking.total_hours }}" onchange="updatePrice()">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <div class="alert alert-info">
+                                                <strong>Tổng tiền mới:</strong> <span id="new-total-price">{{ "{:,.0f}".format(booking.total_price) }} VND</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="text-end">
+                                        <button type="button" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target="#bookingModifyForm">
+                                            Hủy
+                                        </button>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save me-1"></i>
+                                            Cập nhật
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thông tin khách hàng -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>
+                        Thông tin khách hàng
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Họ tên:</strong> {{ current_user.full_name }}</p>
+                            <p><strong>Email:</strong> {{ current_user.email }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Số điện thoại:</strong> {{ current_user.phone or 'Chưa cập nhật' }}</p>
+                            <p><strong>Địa chỉ:</strong> {{ current_user.address or 'Chưa cập nhật' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Tổng tiền và thanh toán -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calculator me-2"></i>
+                        Tổng tiền
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="price-breakdown mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Giá nhà:</span>
+                            <span>{{ "{:,.0f}".format(booking.total_price) }} VND</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Phí dịch vụ:</span>
+                            <span>0 VND</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <strong>Tổng cộng:</strong>
+                            <strong class="text-primary fs-5">{{ "{:,.0f}".format(booking.total_price) }} VND</strong>
+                        </div>
+                    </div>
+
+                    <!-- Nút thanh toán -->
+                    <form id="payment-form" method="POST" action="{{ url_for('payment.process_payment') }}">
+                        <input type="hidden" name="booking_id" value="{{ booking.id }}">
+                        
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mb-3" id="pay-button">
+                            <i class="fas fa-credit-card me-2"></i>
+                            Thanh toán ngay
+                        </button>
+                        
+                        <div class="text-center">
+                            <small class="text-muted">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Thanh toán an toàn qua PayOS
+                            </small>
+                        </div>
+                    </form>
+
+                    <!-- Thông tin bổ sung -->
+                    <div class="mt-3">
+                        <div class="alert alert-info">
+                            <small>
+                                <i class="fas fa-info-circle me-1"></i>
+                                <strong>Lưu ý:</strong>
+                                <ul class="mb-0 mt-1">
+                                    <li>Thanh toán sẽ được xử lý qua cổng PayOS</li>
+                                    <li>Bạn sẽ được chuyển đến trang thanh toán an toàn</li>
+                                    <li>Vui lòng không đóng trình duyệt trong quá trình thanh toán</li>
+                                </ul>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h5>Đang xử lý thanh toán...</h5>
+                <p class="text-muted">Vui lòng chờ trong giây lát</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Home pricing data for calculations
+const homePricing = {
+    price_per_day: {{ booking.home.price_per_day or 0 }},
+    price_per_night: {{ booking.home.price_per_night or 0 }},
+    price_per_hour: {{ booking.home.price_per_hour or 0 }},
+    price_first_2_hours: {{ booking.home.price_first_2_hours or 0 }},
+    price_per_additional_hour: {{ booking.home.price_per_additional_hour or 0 }},
+    price_overnight: {{ booking.home.price_overnight or 0 }},
+    price_daytime: {{ booking.home.price_daytime or 0 }}
+};
+
+function updateBookingForm() {
+    const bookingType = document.getElementById('booking_type').value;
+    const dailyFields = document.getElementById('daily-fields');
+    const hourlyFields = document.getElementById('hourly-fields');
+    
+    if (bookingType === 'daily') {
+        dailyFields.style.display = 'block';
+        hourlyFields.style.display = 'none';
+    } else {
+        dailyFields.style.display = 'none';
+        hourlyFields.style.display = 'block';
+    }
+    
+    updatePrice();
+}
+
+function updatePrice() {
+    const bookingType = document.getElementById('booking_type').value;
+    let totalPrice = 0;
+    
+    if (bookingType === 'daily') {
+        const duration = parseInt(document.getElementById('duration_daily').value) || 1;
+        const price = homePricing.price_per_day || homePricing.price_per_night;
+        totalPrice = price * duration;
+    } else {
+        const duration = parseInt(document.getElementById('duration_hourly').value) || 2;
+        
+        // Calculate hourly price based on pricing structure
+        if (duration <= 2 && homePricing.price_first_2_hours) {
+            totalPrice = homePricing.price_first_2_hours;
+        } else if (duration > 2 && homePricing.price_first_2_hours && homePricing.price_per_additional_hour) {
+            totalPrice = homePricing.price_first_2_hours + (duration - 2) * homePricing.price_per_additional_hour;
+        } else if (homePricing.price_per_hour) {
+            totalPrice = duration * homePricing.price_per_hour;
+        } else {
+            totalPrice = homePricing.price_first_2_hours || 0;
+        }
+    }
+    
+    // Update the price display
+    document.getElementById('new-total-price').textContent = totalPrice.toLocaleString('vi-VN') + ' VND';
+}
+
+// Initialize price calculation on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updatePrice();
+    
+    // Add event listeners for price updates
+    document.getElementById('duration_daily').addEventListener('change', updatePrice);
+    document.getElementById('duration_hourly').addEventListener('change', updatePrice);
+});
+
+document.getElementById('payment-form').addEventListener('submit', function(e) {
+    // Hiển thị loading modal
+    var loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+    loadingModal.show();
+    
+    // Disable nút thanh toán
+    document.getElementById('pay-button').disabled = true;
+    document.getElementById('pay-button').innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...';
+});
+</script>
+{% endblock %} 

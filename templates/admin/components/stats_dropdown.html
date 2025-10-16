@@ -1,0 +1,38 @@
+{#
+  Statistics Style Dropdown Component - Extracted from statistics page
+  
+  This is the exact dropdown style used in statistics charts, made reusable
+  
+  Parameters:
+  - dropdown_id: unique ID for the dropdown (required)
+  - options: list of options with value, text, icon, selected properties (required)
+  - selected_value: current selected value (optional)
+  - dropdown_class: additional CSS classes (optional)
+  
+  Usage:
+  {{ stats_dropdown('myDropdown', [
+    {'value': 'week', 'text': 'Tuần này (7 ngày)', 'icon': 'calendar-week', 'selected': true},
+    {'value': 'month', 'text': 'Tháng này (30 ngày)', 'icon': 'calendar-alt'}
+  ]) }}
+#}
+
+{% macro stats_dropdown(dropdown_id, options=[], selected_value='', dropdown_class='') %}
+<!-- Statistics Style Dropdown Component -->
+<div class="chart-navbar {{ dropdown_class }}">
+    <select id="{{ dropdown_id }}" class="form-select form-select-sm">
+        {% for option in options %}
+            <option 
+                value="{{ option.value }}"
+                {% if option.icon %}
+                    data-custom-properties='{"icon": "{{ option.icon }}"}'
+                {% endif %}
+                {% if (selected_value and option.value == selected_value) or option.get('selected', False) %}
+                    selected
+                {% endif %}
+            >
+                {{ option.text }}
+            </option>
+        {% endfor %}
+    </select>
+</div>
+{% endmacro %}

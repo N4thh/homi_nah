@@ -1,0 +1,2242 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+/* Black navbar text for renter profile page - HIGHEST PRIORITY */
+html body .navbar .nav-link,
+html body .navbar .navbar-brand,
+html body .navbar .brand-text,
+html body .navbar-brand .brand-text,
+html body .navbar-dark .navbar-nav .nav-link {
+  color: black !important;
+  text-decoration: none !important;
+  white-space: nowrap !important;
+  text-shadow: none !important;
+}
+
+/* Ensure normal navbar size */
+html body .navbar {
+  min-height: 60px !important;
+  padding: 0.5rem 1rem !important;
+}
+
+html body .navbar .container {
+  padding: 0 15px !important;
+}
+
+html body .navbar .navbar-brand {
+  font-size: 1.25rem !important;
+  padding: 0.3125rem 0 !important;
+}
+
+html body .navbar .nav-link {
+  padding: 0.5rem 1rem !important;
+  font-size: 1rem !important;
+}
+
+/* All navbar buttons and dropdowns */
+html body .navbar .dropdown-toggle,
+html body .navbar .nav-link.dropdown-toggle,
+html body .navbar .nav-item.dropdown .nav-link.dropdown-toggle {
+  color: black !important;
+  text-shadow: none !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+/* User dropdown container */
+html body .navbar .nav-link.user-dropdown-container,
+html body .navbar .nav-link.user-dropdown-container span {
+  color: black !important;
+  text-shadow: none !important;
+}
+
+/* Language toggle button - black text */
+html body #languageToggle,
+html body #languageToggle span {
+  color: black !important;
+}
+
+/* Hover effects */
+html body .navbar .nav-link:hover,
+html body .navbar .auth-link:hover,
+html body .navbar .dropdown-toggle:hover {
+  color: #8bc34a !important; /* Green hover for black text */
+  transform: translateY(-1px) !important;
+  transition: all 0.3s ease !important;
+}
+
+/* Auth buttons container */
+html body .navbar .auth-buttons-container .nav-link {
+  color: black !important;
+}
+
+/* Avatar and user info */
+html body .navbar img.rounded-circle {
+  border: 2px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+/* CSS Variables for dynamic text color */
+:root {
+  --navbar-text-color: black;
+  --navbar-hover-color: #8bc34a;
+}
+
+/* Dynamic navbar text color */
+html body .navbar .nav-link,
+html body .navbar .navbar-brand,
+html body .navbar .brand-text,
+html body .navbar-brand .brand-text,
+html body .navbar-dark .navbar-nav .nav-link,
+html body .navbar .dropdown-toggle,
+html body .navbar .nav-link.dropdown-toggle,
+html body .navbar .nav-item.dropdown .nav-link.dropdown-toggle,
+html body .navbar .nav-link.user-dropdown-container,
+html body .navbar .nav-link.user-dropdown-container span,
+html body #languageToggle,
+html body #languageToggle span,
+html body .navbar .auth-buttons-container .nav-link {
+  color: var(--navbar-text-color) !important;
+}
+
+html body .navbar .nav-link:hover,
+html body .navbar .auth-link:hover,
+html body .navbar .dropdown-toggle:hover {
+  color: var(--navbar-hover-color) !important;
+}
+</style>
+
+<script>
+// Function to calculate background brightness and adjust text color
+function adjustNavbarTextColor() {
+    const navbar = document.querySelector('.navbar');
+    if (!navbar) return;
+    
+    // Get computed background color
+    const computedStyle = window.getComputedStyle(navbar);
+    const backgroundColor = computedStyle.backgroundColor;
+    
+    // Function to parse RGB values from background color
+    function getRGBValues(color) {
+        const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+        return match ? [parseInt(match[1]), parseInt(match[2]), parseInt(match[3])] : [255, 255, 255];
+    }
+    
+    // Calculate luminance (brightness) using the relative luminance formula
+    function getLuminance(r, g, b) {
+        const [rs, gs, bs] = [r, g, b].map(c => {
+            c = c / 255;
+            return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+        });
+        return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+    }
+    
+    // Get RGB values
+    const [r, g, b] = getRGBValues(backgroundColor);
+    
+    // Calculate luminance
+    const luminance = getLuminance(r, g, b);
+    
+    // Determine text color based on background brightness
+    // If background is transparent or very bright, use dark text
+    // If background is dark, use light text
+    const root = document.documentElement;
+    
+    if (backgroundColor === 'rgba(0, 0, 0, 0)' || backgroundColor === 'transparent' || luminance > 0.5) {
+        // Bright background - use dark text
+        root.style.setProperty('--navbar-text-color', 'black');
+        root.style.setProperty('--navbar-hover-color', '#8bc34a');
+    } else {
+        // Dark background - use light text  
+        root.style.setProperty('--navbar-text-color', 'white');
+        root.style.setProperty('--navbar-hover-color', '#f1b55f');
+    }
+    
+    // Also adjust language toggle background
+    const languageToggle = document.getElementById('languageToggle');
+    if (languageToggle) {
+        if (luminance > 0.5) {
+            languageToggle.style.background = 'rgba(255, 255, 255, 0.8)';
+            languageToggle.style.border = '1px solid rgba(0, 0, 0, 0.2)';
+        } else {
+            languageToggle.style.background = 'rgba(255, 255, 255, 0.2)';
+            languageToggle.style.border = '1px solid rgba(255, 255, 255, 0.3)';
+        }
+    }
+}
+
+// Run on page load
+document.addEventListener('DOMContentLoaded', adjustNavbarTextColor);
+
+// Run when scrolling (navbar might change background)
+window.addEventListener('scroll', adjustNavbarTextColor);
+
+// Run when window is resized (responsive changes)
+window.addEventListener('resize', adjustNavbarTextColor);
+
+// Observe navbar for background changes
+if (window.MutationObserver) {
+    const navbar = document.querySelector('.navbar');
+    if (navbar) {
+        const observer = new MutationObserver(adjustNavbarTextColor);
+        observer.observe(navbar, { 
+            attributes: true, 
+            attributeFilter: ['style', 'class'] 
+        });
+    }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- RENTER LAYOUT: Avatar bên trái, Form bên phải -->
+    <div class="row">
+        <!-- LEFT COLUMN: Avatar Display -->
+        <div class="col-md-4">
+            <div class="renter-profile-card mt-2">
+                <div class="card-body text-center">
+                    <!-- Avatar -->
+                    <div class="avatar-container-renter">
+                        {% if current_user.avatar %}
+                            <img src="{{ url_for('static', filename=current_user.avatar) }}"
+                                alt="Avatar"
+                                class="avatar-circle-renter">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='data/system/default-avatar.png') }}"
+                                alt="Avatar"
+                                class="avatar-circle-renter">
+                        {% endif %}
+                    </div>
+                    
+                    <h5 class="renter-name">{{ current_user.display_name }}</h5>
+                    
+                    <div class="renter-status">
+                        <div class="status-dot"></div>
+                        <span class="status-text">Khách thuê</span>
+                    </div>
+                    
+                    <div class="renter-badge">
+                        <i class="fas fa-user me-2"></i>
+                        Người thuê phòng
+                    </div>
+                </div>
+            </div>
+        </div>
+            
+        <!-- RIGHT COLUMN: Renter Profile Form -->
+        <div class="col-md-8">
+            <div class="form-card-renter mt-2">
+                <div class="card-body">
+                    <!-- Main Profile Title inside card -->
+                    <h2 class="profile-title mb-3" data-translate="my-profile">
+                        <i class="fas fa-user-circle me-2"></i>
+                        Hồ Sơ Của Tôi
+                    </h2>
+                    <div class="title-underline mb-4"></div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="form-title-renter mb-0">
+                            <i class="fas fa-edit me-2"></i>
+                            Thông Tin Cá Nhân
+                        </h5>
+                        <!-- Edit/Save Button -->
+                        <button type="button" id="editToggleBtn" class="btn btn-outline-primary btn-sm" onclick="toggleEditMode()">
+                            <i class="fas fa-edit me-1"></i>
+                            Chỉnh sửa
+                        </button>
+                    </div>
+                    <form method="POST" enctype="multipart/form-data" id="profileForm" onsubmit="return validateAndSubmitForm(event)">
+                        <!-- Tên đăng nhập, Họ, Tên và Giới tính cùng hàng -->
+                        <div class="row">
+                            <div class="col-md-3 mb-2">
+                                <label for="username" class="form-label">
+                                    <i class="fas fa-user me-1"></i>
+                                    Tên đăng nhập
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-input-renter" 
+                                       id="username" 
+                                       name="username" 
+                                       value="{{ current_user.username or current_user.google_username or '' }}"
+                                       {% if current_user.is_google %}readonly{% else %}required{% endif %}>
+                                <div class="invalid-feedback">
+                                    Vui lòng nhập tên đăng nhập
+                                </div>
+                                {% if current_user.is_google %}
+                                <small class="text-muted">Tên đăng nhập từ Google (không thể thay đổi)</small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label for="first_name" class="form-label">
+                                    <i class="fas fa-user me-1"></i>
+                                    Họ
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-input-renter" 
+                                       id="first_name" 
+                                       name="first_name" 
+                                       value="{{ current_user.first_name or '' }}"
+                                       placeholder="Nguyễn"
+                                       required>
+                                <div class="invalid-feedback">
+                                    Vui lòng nhập họ
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label for="last_name" class="form-label">
+                                    <i class="fas fa-user me-1"></i>
+                                    Tên
+                                </label>
+                                <input type="text" 
+                                       class="form-control form-input-renter" 
+                                       id="last_name" 
+                                       name="last_name" 
+                                       value="{{ current_user.last_name or '' }}"
+                                       placeholder="Văn A"
+                                       required>
+                                <div class="invalid-feedback">
+                                    Vui lòng nhập tên
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <label for="gender" class="form-label">
+                                    <i class="fas fa-venus-mars me-1"></i>
+                                    Giới tính
+                                </label>
+                                <select class="form-control form-input-renter" id="gender" name="gender">
+                                    <option value="Nam" {{ 'selected' if current_user.gender == 'Nam' else '' }}>Nam</option>
+                                    <option value="Nữ" {{ 'selected' if current_user.gender == 'Nữ' else '' }}>Nữ</option>
+                                    <option value="Khác" {{ 'selected' if current_user.gender == 'Khác' else '' }}>Khác</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Ngày sinh -->
+                        <div class="mb-2">
+                            <label for="birth_date" class="form-label">
+                                <i class="fas fa-calendar me-1"></i>
+                                Ngày sinh
+                            </label>
+                            <div class="row">
+                                <div class="col-4">
+                                    <select class="form-control form-input-renter" name="birth_day">
+                                        <option value="">Ngày</option>
+                                        {% for day in range(1, 32) %}
+                                            <option value="{{ day }}" {{ 'selected' if current_user.birth_date and current_user.birth_date.day == day else '' }}>
+                                                {{ day }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-4">
+                                    <select class="form-control form-input-renter" name="birth_month">
+                                        <option value="">Tháng</option>
+                                        {% for month in range(1, 13) %}
+                                            <option value="{{ month }}" {{ 'selected' if current_user.birth_date and current_user.birth_date.month == month else '' }}>
+                                                {{ month }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-4">
+                                    <select class="form-control form-input-renter" name="birth_year">
+                                        <option value="">Năm</option>
+                                        {% for year in range(1950, 2010) %}
+                                            <option value="{{ year }}" {{ 'selected' if current_user.birth_date and current_user.birth_date.year == year else '' }}>
+                                                {{ year }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Email và Phone cùng hàng -->
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <label for="email" class="form-label">
+                                    <i class="fas fa-envelope me-1"></i>
+                                    Email
+                                </label>
+                                <div class="email-container">
+                                    <input type="email"
+                                           class="form-control form-input-renter email-input"
+                                           id="email"
+                                           name="email"
+                                           value="{{ current_user.email }}"
+                                           required
+                                           disabled>
+                                    {% if current_user.email_verified %}
+                                    <div class="email-verification-container">
+                                        <div class="verification-status verified">
+                                            <i class="fas fa-check-circle text-success me-2"></i>
+                                            <span class="status-text">Đã xác thực</span>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="email-verification-container">
+                                        <a href="{{ url_for('renter_profile.verify_email') }}" class="verify-email-btn">
+                                            <i class="fas fa-envelope me-1"></i>
+                                            Xác thực ngay
+                                        </a>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="invalid-feedback">
+                                    Vui lòng nhập email hợp lệ
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-2">
+                                <label for="phone" class="form-label">
+                                    <i class="fas fa-phone me-1"></i>
+                                    Số điện thoại
+                                </label>
+                                <input type="tel" 
+                                       class="form-control form-input-renter" 
+                                       id="phone" 
+                                       name="phone" 
+                                       value="{{ current_user.phone or '' }}"
+                                       placeholder="0937956211">
+                            </div>
+                        </div>
+
+                        <!-- Địa chỉ -->
+                        <div class="mb-2">
+                            <label for="address" class="form-label">
+                                <i class="fas fa-map-marker-alt me-1"></i>
+                                Địa chỉ
+                            </label>
+                            <input type="text" 
+                                   class="form-control form-input-renter" 
+                                   id="address" 
+                                   name="address" 
+                                   value="{{ current_user.address or '' }}"
+                                   placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố">
+                        </div>
+                        
+                        <!-- Ảnh đại diện và Đổi mật khẩu -->
+                        <div class="row">
+                            <div class="col-md-8 mb-2">
+                                <label for="avatar" class="form-label">
+                                    <i class="fas fa-camera me-1"></i>
+                                    Ảnh đại diện
+                                </label>
+                                <input type="file" 
+                                       class="form-control form-input-renter" 
+                                       id="avatar" 
+                                       name="avatar" 
+                                       accept="image/*"
+                                       onchange="previewImage(this)">
+                                <div class="form-text">
+                                    Chọn ảnh có kích thước tối đa 5MB
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <label class="form-label">
+                                    <i class="fas fa-lock me-1"></i>
+                                    Bảo mật
+                                </label>
+                                <div>
+                                    <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                        <i class="fas fa-key me-1"></i>
+                                        Đổi mật khẩu
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #dc3545, #c82333); color: white;">
+                <h5 class="modal-title" id="changePasswordModalLabel">
+                    <i class="fas fa-lock me-2"></i>
+                    Đổi Mật Khẩu
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Step 1: Password Form -->
+                <div id="passwordFormStep">
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Để đổi mật khẩu, bạn cần xác thực qua email. Hệ thống sẽ gửi mã OTP đến email của bạn.
+                    </div>
+                    
+                    <form id="passwordChangeForm">
+                        <div class="mb-3">
+                            <label for="currentPassword" class="form-label">
+                                <i class="fas fa-key me-1"></i>
+                                Mật khẩu hiện tại <span class="text-danger">*</span>
+                            </label>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="currentPassword" 
+                                   required
+                                   placeholder="Nhập mật khẩu hiện tại">
+                            <div class="invalid-feedback" id="currentPasswordError"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">
+                                <i class="fas fa-lock me-1"></i>
+                                Mật khẩu mới <span class="text-danger">*</span>
+                            </label>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="newPassword" 
+                                   required
+                                   placeholder="Nhập mật khẩu mới"
+                                   oninput="evaluatePasswordStrength(this.value)">
+                            <div id="passwordStrength" class="mt-2"></div>
+                            <div class="invalid-feedback" id="newPasswordError"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="confirmNewPassword" class="form-label">
+                                <i class="fas fa-lock me-1"></i>
+                                Nhập lại mật khẩu mới <span class="text-danger">*</span>
+                            </label>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="confirmNewPassword" 
+                                   required
+                                   placeholder="Nhập lại mật khẩu mới"
+                                   oninput="checkPasswordMatch()">
+                            <div id="passwordMatch" class="mt-2"></div>
+                            <div class="invalid-feedback" id="confirmNewPasswordError"></div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Step 2: OTP Verification -->
+                <div id="otpVerificationStep" style="display: none;">
+                    <div class="alert alert-success d-flex align-items-center" role="alert" style="margin-bottom: 16px;">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <div>
+                            Mã OTP đã được gửi đến email <strong id="userEmail"></strong> (có hiệu lực 2 phút)
+                        </div>
+                    </div>
+                        <div class="text-center mb-3">
+        <div class="countdown-timer" style="font-size: 1.1rem; background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #e9ecef;">
+            <span id="countdownText">Mã OTP có hiệu lực trong: </span>
+            <span id="countdownTime" class="fw-bold text-danger" style="font-size: 1.2rem;">02:00</span>
+        </div>
+    </div>
+                    <form id="otpForm">
+                        <div class="mb-3">
+                            <label for="otpInput" class="form-label fw-semibold">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Mã xác nhận <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control text-center" 
+                                   id="otpInput" 
+                                   maxlength="6"
+                                   placeholder="Nhập mã 6 số"
+                                   style="font-size: 1.2rem; letter-spacing: 0.5rem; font-weight: bold;">
+                            <div class="invalid-feedback" id="otpError"></div>
+                        </div>
+                        <div class="text-center mb-2">
+                            <small class="text-muted">
+                                Bạn có thể thử tối đa <span id="maxAttempts" class="fw-bold">3</span> lần
+                            </small>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Loading State -->
+                <div id="loadingState" style="display: none;">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted" id="loadingText">Đang xử lý...</p>
+                    </div>
+                </div>
+                
+                <!-- Success State -->
+                <div id="successState" style="display: none;">
+                    <div class="text-center py-4">
+                        <div class="mb-3">
+                            <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                        </div>
+                        <h5 class="text-success mb-2">Đổi mật khẩu thành công!</h5>
+                        <p class="text-muted">Mật khẩu của bạn đã được cập nhật. Email xác nhận đã được gửi.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="cancelBtn">
+                    <i class="fas fa-times me-1"></i>
+                    Hủy
+                </button>
+                <button type="button" class="btn btn-primary" id="sendOtpBtn" onclick="sendOtp()">
+                    <i class="fas fa-paper-plane me-1"></i>
+                    Gửi mã xác nhận
+                </button>
+                <button type="button" class="btn btn-success" id="verifyOtpBtn" style="display: none;" onclick="verifyOtp()">
+                    <i class="fas fa-check me-1"></i>
+                    Xác nhận
+                </button>
+                <button type="button" class="btn btn-outline-primary" id="resendOtpBtn" style="display: none;" onclick="sendOtp()">
+                    <i class="fas fa-redo me-1"></i>
+                    Gửi lại
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-title {
+    color: #000000;
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    text-shadow: none;
+}
+
+.container.py-4 {
+    margin-top: -60px;
+    position: relative;
+    z-index: 1;
+    padding-top: 1rem;
+}
+
+.title-underline {
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, #9ed649, #8ab82f);
+    border-radius: 2px;
+    margin: 0 auto;
+}
+
+/* Override title-underline to align left when inside form card */
+.form-card-renter .title-underline {
+    margin: 0;
+    width: auto;
+    display: inline-block;
+    min-width: 200px; /* Adjust based on text length */
+}
+
+/* Ensure modal steps are properly displayed */
+#otpVerificationStep {
+    display: none;
+    visibility: visible;
+    opacity: 1;
+}
+
+#otpVerificationStep.show {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Improved modal styles */
+#changePasswordModal .modal-content {
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+#changePasswordModal .modal-header {
+    border-bottom: 1px solid rgba(220, 53, 69, 0.2);
+}
+
+#changePasswordModal .alert {
+    border-radius: 8px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#changePasswordModal .form-control {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+#changePasswordModal .form-control:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+#changePasswordModal .btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+
+#changePasswordModal .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Disabled form styling */
+.form-input-renter:disabled {
+    background-color: #f8f9fa;
+    border-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+.form-input-renter:disabled:hover {
+    border-color: #e9ecef;
+    background-color: #f8f9fa;
+}
+
+/* Edit button styling */
+#editToggleBtn.btn-outline-primary {
+    color: #000000 !important;
+    border-color: #8ab82f;
+}
+
+#editToggleBtn.btn-outline-primary:hover {
+    background-color: #8ab82f;
+    border-color: #8ab82f;
+    color: #000000 !important;
+}
+
+/* Save button styling */
+#editToggleBtn.btn-success {
+    color: #ffffff !important;
+    background-color: #8ab82f;
+    border-color: #8ab82f;
+}
+
+#editToggleBtn.btn-success:hover {
+    background-color: #7ba428;
+    border-color: #7ba428;
+    color: #ffffff !important;
+}
+
+.renter-profile-card {
+    background: linear-gradient(135deg, #9ed649 0%, #8ab82f 100%);
+    background-size: 200% 200%;
+    animation: rotateBackground 15s ease infinite;
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(158, 214, 73, 0.2);
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.renter-profile-card:hover {
+    transform: translateY(-5px);
+    animation: glowAnimation 2s ease-in-out infinite;
+}
+
+@keyframes rotateBackground {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes glowAnimation {
+    0%, 100% { box-shadow: 0 10px 30px rgba(158, 214, 73, 0.2); }
+    50% { box-shadow: 0 15px 40px rgba(158, 214, 73, 0.4); }
+}
+
+@keyframes floatAnimation {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.avatar-container-renter {
+    width: 140px;
+    height: 140px;
+    margin: 0 auto 20px;
+    position: relative;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    padding: 8px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    animation: floatAnimation 3s ease-in-out infinite;
+}
+
+.avatar-container-renter:hover {
+    transform: scale(1.05) translateY(-5px);
+    background: rgba(255,255,255,0.3);
+}
+
+.avatar-circle-renter {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid white;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+}
+
+.avatar-circle-renter:hover {
+    transform: rotate(5deg);
+    border-width: 5px;
+}
+
+.renter-name {
+    color: white;
+    font-weight: 600;
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.renter-name:hover {
+    transform: scale(1.05);
+    text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.renter-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 15px auto;
+    background: rgba(255,255,255,0.2);
+    padding: 10px 20px;
+    border-radius: 20px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255,255,255,0.3);
+    width: fit-content;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background: #ffffff;
+    border-radius: 50%;
+    animation: pulse-status 2s infinite;
+    box-shadow: 0 0 0 rgba(255, 255, 255, 0.4);
+}
+
+@keyframes pulse-status {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+}
+
+.status-text {
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+}
+
+.renter-badge {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(45deg, #ea580c, #fb923c);
+    color: white;
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 10px auto;
+    box-shadow: 0 4px 15px rgba(234, 88, 12, 0.3);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.renter-badge i {
+    color: white;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
+.form-card-renter {
+    background: white;
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 2px solid rgba(158, 214, 73, 0.1);
+}
+
+.form-card-renter:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+    border-color: rgba(158, 214, 73, 0.3);
+}
+
+.form-title-renter {
+    color: #8ab82f;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f8f9fa;
+    display: flex;
+    align-items: center;
+}
+
+.form-label {
+    color: #8ab82f;
+    font-weight: 500;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.form-input-renter {
+    border: 2px solid #E5E9FA;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f8f9fa !important;
+}
+
+.form-input-renter:focus {
+    border-color: #8ab82f;
+    box-shadow: 0 0 0 3px rgba(138, 184, 47, 0.1);
+    background: white;
+    transform: translateY(-1px);
+    outline: none;
+}
+
+.form-input-renter:hover {
+    border-color: #9ed649;
+    background: white;
+}
+
+.btn-renter-primary {
+    background: linear-gradient(135deg, #9ed649 0%, #b2e254 100%);
+    color: #18282C;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(158, 214, 73, 0.4);
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn-renter-primary:hover {
+    background: linear-gradient(135deg, #b2e254 0%, #9ed649 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(158, 214, 73, 0.6);
+    color: #18282C;
+}
+
+.btn-renter-primary:active {
+    transform: translateY(0);
+}
+
+.form-text {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 5px;
+}
+
+/* Thêm style mới để giảm khoảng cách */
+.form-control {
+    padding: 8px 12px;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.mb-2 {
+    margin-bottom: 0.75rem !important;
+}
+
+/* Keyframes cho các animation */
+@keyframes floatAnimation {
+    0% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+@keyframes glowAnimation {
+    0% {
+        box-shadow: 0 5px 15px rgba(158, 214, 73, 0.2);
+    }
+    50% {
+        box-shadow: 0 5px 25px rgba(158, 214, 73, 0.4);
+    }
+    100% {
+        box-shadow: 0 5px 15px rgba(158, 214, 73, 0.2);
+    }
+}
+
+/* Thêm style giống owner cho renter email badge */
+.email-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.email-input {
+    flex: 1;
+    padding: 15px 60px 15px 16px;
+    background: linear-gradient(135deg, #E0EC9B 0%, #f0f8d0 100%);
+    border: 1.5px solid #C3D600;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #101917;
+    box-shadow: 0 2px 8px rgba(224, 236, 155, 0.2);
+    height: 48px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+.verified-badge {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: linear-gradient(135deg, #34C759 0%, #28a745 100%);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 15px;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    box-shadow: 0 1px 4px rgba(52, 199, 89, 0.3);
+    animation: verified-glow 2s ease-in-out infinite alternate;
+    z-index: 2;
+}
+.verified-badge .btn-outline-primary {
+    margin-left: 0.5rem;
+    padding: 2px 10px;
+    font-size: 10px;
+    border-radius: 10px;
+    height: 22px;
+    line-height: 1.2;
+}
+.verified-badge .verified-icon {
+    font-size: 10px;
+    color: inherit;
+}
+.verified-badge .verified-text {
+    font-size: 8px;
+    font-weight: 700;
+}
+@keyframes verified-glow {
+    from { box-shadow: 0 2px 8px rgba(52, 199, 89, 0.3); }
+    to { box-shadow: 0 4px 16px rgba(52, 199, 89, 0.5); }
+}
+
+/* Email Verification Container Styles */
+.email-verification-container {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 2;
+}
+
+.verification-status {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.verification-status.unverified {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.verification-status.verified {
+    background: #28a745;
+    color: white;
+    border: 1px solid #28a745;
+}
+
+.status-text {
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.verify-email-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    background: #28a745;
+    color: white;
+    text-decoration: none;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2);
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.verify-email-btn:hover {
+    background: #218838;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(40, 167, 69, 0.3);
+}
+
+.verify-email-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(40, 167, 69, 0.2);
+}
+
+@media (max-width: 768px) {
+    .profile-title {
+        font-size: 1.8rem;
+    }
+    
+    .renter-profile-card .card-body {
+        padding: 20px;
+    }
+    
+    .avatar-container-renter {
+        width: 120px;
+        height: 120px;
+    }
+}
+
+/* Password Change Modal Styles */
+.countdown-timer {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid #dee2e6;
+    margin: 15px 0;
+}
+
+.countdown-timer #countdownTime {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #dc3545;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+#otpInput {
+    font-family: 'Courier New', monospace;
+    text-align: center;
+    font-size: 1.5rem !important;
+    letter-spacing: 0.5rem !important;
+    font-weight: bold;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid #dee2e6;
+    border-radius: 10px;
+    padding: 15px;
+    transition: all 0.3s ease;
+}
+
+#otpInput:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    background: white;
+}
+
+#otpInput::placeholder {
+    color: #6c757d;
+    font-size: 1rem;
+    letter-spacing: normal;
+}
+
+.modal-lg {
+    max-width: 600px;
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.alert {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    color: #0c5460;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+}
+
+.form-control {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    padding: 12px 15px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.input-group .btn {
+    border-radius: 0 8px 8px 0;
+    border: 2px solid #e9ecef;
+    border-left: none;
+}
+
+.input-group .form-control {
+    border-radius: 8px 0 0 8px;
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+    border: none;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #1e7e34 0%, #155724 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #545b62 100%);
+    border: none;
+    box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+}
+
+.btn-secondary:hover {
+    background: linear-gradient(135deg, #545b62 0%, #3d4449 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+}
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+#successState .fas {
+    animation: successPulse 2s ease-in-out infinite;
+}
+
+@keyframes successPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Password strength indicator */
+#passwordStrength {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+}
+
+#passwordMatch {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .modal-lg {
+        max-width: 95%;
+        margin: 10px;
+    }
+    
+    .modal-body {
+        padding: 1rem;
+    }
+    
+    #otpInput {
+        font-size: 1.2rem !important;
+        letter-spacing: 0.3rem !important;
+        padding: 12px;
+    }
+    
+    .countdown-timer #countdownTime {
+        font-size: 1.2rem;
+    }
+}
+</style>
+
+<script>
+let isEditMode = false;
+
+function toggleEditMode() {
+    const editBtn = document.getElementById('editToggleBtn');
+    const formInputs = document.querySelectorAll('.form-input-renter');
+    const avatarInput = document.getElementById('avatar');
+    
+    if (!isEditMode) {
+        // Switch to edit mode
+        isEditMode = true;
+        editBtn.innerHTML = '<i class="fas fa-save me-1"></i>Lưu thay đổi';
+        editBtn.classList.remove('btn-outline-primary');
+        editBtn.classList.add('btn-success');
+        editBtn.setAttribute('onclick', 'saveChanges()');
+        
+        // Enable all inputs
+        formInputs.forEach(input => {
+            input.disabled = false;
+        });
+        if (avatarInput) avatarInput.disabled = false;
+        
+    } else {
+        // Switch back to view mode
+        isEditMode = false;
+        editBtn.innerHTML = '<i class="fas fa-edit me-1"></i>Chỉnh sửa';
+        editBtn.classList.remove('btn-success');
+        editBtn.classList.add('btn-outline-primary');
+        editBtn.setAttribute('onclick', 'toggleEditMode()');
+        
+        // Disable all inputs
+        formInputs.forEach(input => {
+            input.disabled = true;
+        });
+        if (avatarInput) avatarInput.disabled = true;
+    }
+}
+
+function saveChanges() {
+    if (validateForm()) {
+        document.getElementById('profileForm').submit();
+    }
+}
+
+function validateAndSubmitForm(event) {
+    event.preventDefault();
+    return false; // Prevent default form submission
+}
+
+function validateForm() {
+    let isValid = true;
+    const form = document.getElementById('profileForm');
+    const inputs = form.querySelectorAll('input[required]');
+    
+    inputs.forEach(input => {
+        if (!input.value.trim()) {
+            input.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            input.classList.remove('is-invalid');
+        }
+    });
+    
+    // Email validation
+    const emailInput = document.getElementById('email');
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailInput.value)) {
+        emailInput.classList.add('is-invalid');
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+// Initialize form in view mode when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    const formInputs = document.querySelectorAll('.form-input-renter');
+    const avatarInput = document.getElementById('avatar');
+    
+    // Disable all inputs initially
+    formInputs.forEach(input => {
+        input.disabled = true;
+    });
+    if (avatarInput) avatarInput.disabled = true;
+});
+
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const avatar = document.querySelector('.avatar-circle-renter');
+            avatar.src = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// Real-time validation
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('.form-input-renter');
+    const usernameInput = document.getElementById('username');
+    const emailInput = document.getElementById('email');
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.hasAttribute('required') && this.value.trim()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    });
+    
+    // Username validation
+    if (usernameInput) {
+        usernameInput.addEventListener('input', function() {
+            const username = this.value.trim();
+            if (username && username !== '{{ current_user.username }}') {
+                checkUsernameAvailability(username, this);
+            } else if (username === '{{ current_user.username }}') {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    }
+    
+    // Email validation
+    if (emailInput) {
+        emailInput.addEventListener('input', function() {
+            const email = this.value.trim();
+            if (email && email !== '{{ current_user.email }}') {
+                checkEmailAvailability(email, this);
+            } else if (email === '{{ current_user.email }}') {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            }
+        });
+    }
+});
+
+// Check username availability
+function checkUsernameAvailability(username, inputElement) {
+    fetch('/renter/check-username', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({username: username})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.available) {
+            inputElement.classList.remove('is-invalid');
+            inputElement.classList.add('is-valid');
+        } else {
+            inputElement.classList.remove('is-valid');
+            inputElement.classList.add('is-invalid');
+            const feedback = inputElement.nextElementSibling;
+            if (feedback && feedback.classList.contains('invalid-feedback')) {
+                feedback.textContent = 'Tên đăng nhập đã tồn tại';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error checking username:', error);
+    });
+}
+
+// Check email availability
+function checkEmailAvailability(email, inputElement) {
+    fetch('/renter/check-email', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({email: email})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.available) {
+            inputElement.classList.remove('is-invalid');
+            inputElement.classList.add('is-valid');
+        } else {
+            inputElement.classList.remove('is-valid');
+            inputElement.classList.add('is-invalid');
+            const feedback = inputElement.nextElementSibling;
+            if (feedback && feedback.classList.contains('invalid-feedback')) {
+                feedback.textContent = 'Email đã tồn tại';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error checking email:', error);
+    });
+}
+
+// Password Change Modal Functions
+let countdownInterval = null;
+let currentStep = 'form';
+let modalInitialized = false;
+
+// Function removed - no longer needed since we removed eye icons
+
+function evaluatePasswordStrength(password) {
+    const strengthDiv = document.getElementById('passwordStrength');
+    
+    if (!password) {
+        strengthDiv.innerHTML = '';
+        return;
+    }
+    
+    // Simple client-side evaluation
+    let score = 0;
+    let details = [];
+    
+    // Length check
+    if (password.length >= 8) {
+        score += 2;
+        details.push('✓ Độ dài tốt (≥ 8 ký tự)');
+    } else if (password.length >= 6) {
+        score += 1;
+        details.push('⚠ Độ dài trung bình (6-7 ký tự)');
+    } else {
+        details.push('✗ Độ dài quá ngắn (≤ 5 ký tự)');
+    }
+    
+    // Character types
+    const hasLower = /[a-z]/.test(password);
+    const hasUpper = /[A-Z]/.test(password);
+    const hasDigit = /\d/.test(password);
+    const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+    
+    const charTypes = [hasLower, hasUpper, hasDigit, hasSpecial].filter(Boolean).length;
+    
+    if (charTypes >= 3) {
+        score += 2;
+        details.push(`✓ Sử dụng ${charTypes} loại ký tự`);
+    } else if (charTypes === 2) {
+        score += 1;
+        details.push('⚠ Sử dụng 2 loại ký tự');
+    } else {
+        details.push('✗ Chỉ sử dụng 1 loại ký tự');
+    }
+    
+    // Determine strength
+    let strength, strengthClass;
+    if (score <= 0) {
+        strength = 'YẾU';
+        strengthClass = 'text-danger';
+    } else if (score <= 2) {
+        strength = 'TRUNG BÌNH';
+        strengthClass = 'text-warning';
+    } else {
+        strength = 'MẠNH';
+        strengthClass = 'text-success';
+    }
+    
+    // Update UI
+    strengthDiv.innerHTML = `
+        <div class="${strengthClass} fw-bold">
+            <i class="bi bi-shield me-1"></i>
+            Độ mạnh: ${strength}
+        </div>
+        <small class="text-muted">
+            ${details.join('<br>')}
+        </small>
+    `;
+    
+    // Store evaluation for form submission
+    document.getElementById('newPassword').dataset.strength = strength;
+    document.getElementById('newPassword').dataset.score = score;
+}
+
+function checkPasswordMatch() {
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmNewPassword').value;
+    const matchDiv = document.getElementById('passwordMatch');
+    
+    if (!confirmPassword) {
+        matchDiv.innerHTML = '';
+        return;
+    }
+    
+    if (newPassword === confirmPassword) {
+        matchDiv.innerHTML = '<i class="bi bi-check-circle me-1"></i>Mật khẩu khớp';
+        matchDiv.className = 'text-success fw-bold';
+    } else {
+        matchDiv.innerHTML = '<i class="bi bi-x-circle me-1"></i>Mật khẩu không khớp';
+        matchDiv.className = 'text-danger fw-bold';
+    }
+}
+
+function validatePasswordForm() {
+    const currentPassword = document.getElementById('currentPassword')?.value || '';
+    const newPassword = document.getElementById('newPassword')?.value || '';
+    const confirmPassword = document.getElementById('confirmNewPassword')?.value || '';
+    
+    let isValid = true;
+    
+    // Clear previous errors
+    document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    
+    // Validate current password
+    if (!currentPassword) {
+        const currentPasswordEl = document.getElementById('currentPassword');
+        const currentPasswordErrorEl = document.getElementById('currentPasswordError');
+        if (currentPasswordEl) currentPasswordEl.classList.add('is-invalid');
+        if (currentPasswordErrorEl) currentPasswordErrorEl.textContent = 'Vui lòng nhập mật khẩu hiện tại';
+        isValid = false;
+    }
+    
+    // Validate new password
+    if (!newPassword) {
+        const newPasswordEl = document.getElementById('newPassword');
+        const newPasswordErrorEl = document.getElementById('newPasswordError');
+        if (newPasswordEl) newPasswordEl.classList.add('is-invalid');
+        if (newPasswordErrorEl) newPasswordErrorEl.textContent = 'Vui lòng nhập mật khẩu mới';
+        isValid = false;
+    } else if (newPassword === currentPassword) {
+        const newPasswordEl = document.getElementById('newPassword');
+        const newPasswordErrorEl = document.getElementById('newPasswordError');
+        if (newPasswordEl) newPasswordEl.classList.add('is-invalid');
+        if (newPasswordErrorEl) newPasswordErrorEl.textContent = 'Mật khẩu mới không được trùng với mật khẩu cũ';
+        isValid = false;
+    } else {
+        const newPasswordEl = document.getElementById('newPassword');
+        const newPasswordErrorEl = document.getElementById('newPasswordError');
+        if (newPasswordEl && newPasswordEl.dataset.score <= 0) {
+            if (newPasswordEl) newPasswordEl.classList.add('is-invalid');
+            if (newPasswordErrorEl) newPasswordErrorEl.textContent = 'Mật khẩu quá yếu. Vui lòng chọn mật khẩu mạnh hơn';
+            isValid = false;
+        }
+    }
+    
+    // Validate confirm password
+    if (!confirmPassword) {
+        const confirmPasswordEl = document.getElementById('confirmNewPassword');
+        const confirmPasswordErrorEl = document.getElementById('confirmNewPasswordError');
+        if (confirmPasswordEl) confirmPasswordEl.classList.add('is-invalid');
+        if (confirmPasswordErrorEl) confirmPasswordErrorEl.textContent = 'Vui lòng nhập lại mật khẩu mới';
+        isValid = false;
+    } else if (newPassword !== confirmPassword) {
+        const confirmPasswordEl = document.getElementById('confirmNewPassword');
+        const confirmPasswordErrorEl = document.getElementById('confirmNewPasswordError');
+        if (confirmPasswordEl) confirmPasswordEl.classList.add('is-invalid');
+        if (confirmPasswordErrorEl) confirmPasswordErrorEl.textContent = 'Mật khẩu xác nhận không khớp';
+        isValid = false;
+    }
+    
+    return isValid;
+}
+
+function showLoading(text = 'Đang xử lý...') {
+    const loadingTextEl = document.getElementById('loadingText');
+    const loadingStateEl = document.getElementById('loadingState');
+    const passwordFormStepEl = document.getElementById('passwordFormStep');
+    const otpVerificationStepEl = document.getElementById('otpVerificationStep');
+    const successStateEl = document.getElementById('successState');
+    
+    if (loadingTextEl) loadingTextEl.textContent = text;
+    if (loadingStateEl) loadingStateEl.style.display = 'block';
+    if (passwordFormStepEl) passwordFormStepEl.style.display = 'none';
+    if (otpVerificationStepEl) otpVerificationStepEl.style.display = 'none';
+    if (successStateEl) successStateEl.style.display = 'none';
+}
+
+function hideLoading() {
+    document.getElementById('loadingState').style.display = 'none';
+}
+
+function showStep(step) {
+    currentStep = step;
+    
+    if (step === 'form') {
+        document.getElementById('passwordFormStep').style.display = 'block';
+        document.getElementById('otpVerificationStep').style.display = 'none';
+        document.getElementById('successState').style.display = 'none';
+        document.getElementById('sendOtpBtn').style.display = 'inline-block';
+        document.getElementById('verifyOtpBtn').style.display = 'none';
+        document.getElementById('resendOtpBtn').style.display = 'none';
+    } else if (step === 'otp') {
+        const otpStep = document.getElementById('otpVerificationStep');
+        const formStep = document.getElementById('passwordFormStep');
+        const successStep = document.getElementById('successState');
+        
+        if (formStep) formStep.style.display = 'none';
+        if (otpStep) {
+            otpStep.style.display = 'block';
+            otpStep.classList.add('show');
+        }
+        if (successStep) successStep.style.display = 'none';
+        
+        const sendOtpBtnEl = document.getElementById('sendOtpBtn');
+        const verifyOtpBtnEl = document.getElementById('verifyOtpBtn');
+        const resendOtpBtnEl = document.getElementById('resendOtpBtn');
+        const cancelBtnEl = document.getElementById('cancelBtn');
+        
+        if (sendOtpBtnEl) sendOtpBtnEl.style.display = 'none';
+        if (verifyOtpBtnEl) verifyOtpBtnEl.style.display = 'inline-block';
+        if (resendOtpBtnEl) resendOtpBtnEl.style.display = 'inline-block';
+        
+        // Change cancel button text to "Quay lại" when in OTP step
+        if (cancelBtnEl) {
+            cancelBtnEl.innerHTML = '<i class="fas fa-arrow-left me-1"></i>Quay lại';
+        }
+    } else if (step === 'success') {
+        const passwordFormStepEl = document.getElementById('passwordFormStep');
+        const otpVerificationStepEl = document.getElementById('otpVerificationStep');
+        const successStateEl = document.getElementById('successState');
+        const sendOtpBtnEl = document.getElementById('sendOtpBtn');
+        const verifyOtpBtnEl = document.getElementById('verifyOtpBtn');
+        const resendOtpBtnEl = document.getElementById('resendOtpBtn');
+        const cancelBtnEl = document.getElementById('cancelBtn');
+        
+        if (passwordFormStepEl) passwordFormStepEl.style.display = 'none';
+        if (otpVerificationStepEl) otpVerificationStepEl.style.display = 'none';
+        if (successStateEl) successStateEl.style.display = 'block';
+        if (sendOtpBtnEl) sendOtpBtnEl.style.display = 'none';
+        if (verifyOtpBtnEl) verifyOtpBtnEl.style.display = 'none';
+        if (resendOtpBtnEl) resendOtpBtnEl.style.display = 'none';
+        if (cancelBtnEl) cancelBtnEl.textContent = 'Đóng';
+        
+        setTimeout(() => {
+            const modal = document.getElementById('changePasswordModal');
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        }, 2500);
+    }
+}
+
+function startCountdown() {
+    let timeLeft = 120; // 2 minutes in seconds
+    
+    function updateCountdown() {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        const countdownTimeEl = document.getElementById('countdownTime');
+        if (countdownTimeEl) {
+            countdownTimeEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        if (timeLeft <= 0) {
+            clearInterval(countdownInterval);
+            const countdownTimeEl = document.getElementById('countdownTime');
+            const countdownTextEl = document.getElementById('countdownText');
+            const verifyOtpBtnEl = document.getElementById('verifyOtpBtn');
+            
+            if (countdownTimeEl) countdownTimeEl.textContent = '00:00';
+            if (countdownTextEl) countdownTextEl.textContent = 'Mã OTP đã hết hạn. ';
+            if (verifyOtpBtnEl) verifyOtpBtnEl.disabled = true;
+        }
+        timeLeft--;
+    }
+    
+    updateCountdown();
+    countdownInterval = setInterval(updateCountdown, 1000);
+}
+
+function sendOtp() {
+    if (currentStep === 'form' && !validatePasswordForm()) {
+        return;
+    }
+    showLoading('Đang gửi mã OTP...');
+    document.querySelectorAll('.alert').forEach(el => el.remove());
+    fetch('/renter/change-password/send-otp', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            current_password: document.getElementById('currentPassword').value,
+            new_password: document.getElementById('newPassword').value,
+            confirm_password: document.getElementById('confirmNewPassword').value
+        })
+    })
+    .then(response => {
+        return response.json().then(data => {
+            return { data, status: response.status, ok: response.ok };
+        }).catch(() => {
+            return response.text().then(text => ({
+                data: { success: false, message: text || 'Có lỗi xảy ra. Vui lòng thử lại.' },
+                status: response.status,
+                ok: response.ok
+            }));
+        });
+    })
+    .then(({ data, status, ok }) => {
+        hideLoading();
+        document.querySelectorAll('.alert').forEach(el => el.remove());
+        console.log('[DEBUG] Response data:', data);
+        console.log('[DEBUG] Response status:', status);
+        console.log('[DEBUG] Response ok:', ok);
+        
+        if (data.success === true) {
+            // Update email display
+            const userEmailElement = document.getElementById('userEmail');
+            if (userEmailElement) {
+                userEmailElement.textContent = data.email || '';
+            }
+            
+            // Show OTP step immediately
+            showStep('otp');
+            startCountdown();
+            
+            // Add success alert
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show d-flex align-items-center';
+            alertDiv.innerHTML = `
+                <i class="fas fa-check-circle me-2"></i>
+                <div class="flex-grow-1">
+                    ${data.message || 'Mã OTP đã được gửi thành công!'}
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            const modalBody = document.querySelector('.modal-body');
+            modalBody.insertBefore(alertDiv, modalBody.firstChild);
+        } else {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger alert-dismissible fade show d-flex align-items-center';
+            alertDiv.innerHTML = `
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <div class="flex-grow-1">
+                    ${data.message || 'Có lỗi xảy ra. Vui lòng thử lại.'}
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            document.querySelector('.modal-body').insertBefore(alertDiv, document.getElementById('passwordFormStep'));
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        document.querySelectorAll('.alert').forEach(el => el.remove());
+        let errorMessage = 'Có lỗi xảy ra. Vui lòng thử lại.';
+        if (error.message && error.message.includes('HTTP')) {
+            if (error.message.includes('HTTP 500')) {
+                errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
+            } else if (error.message.includes('HTTP 400')) {
+                errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.';
+            } else if (error.message.includes('HTTP 403')) {
+                errorMessage = 'Bạn không có quyền thực hiện thao tác này.';
+            } else if (error.message.includes('HTTP 401')) {
+                errorMessage = 'Vui lòng đăng nhập lại.';
+            }
+        }
+        console.error('[DEBUG] Fetch error:', error);
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+        alertDiv.innerHTML = `
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            ${errorMessage}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.querySelector('.modal-body').insertBefore(alertDiv, document.getElementById('passwordFormStep'));
+    });
+}
+
+function verifyOtp() {
+    const otp = document.getElementById('otpInput').value.trim();
+    
+    if (!otp) {
+        document.getElementById('otpInput').classList.add('is-invalid');
+        document.getElementById('otpError').textContent = 'Vui lòng nhập mã OTP';
+        return;
+    }
+    
+    if (otp.length !== 6) {
+        document.getElementById('otpInput').classList.add('is-invalid');
+        document.getElementById('otpError').textContent = 'Mã OTP phải có 6 số';
+        return;
+    }
+    
+    document.getElementById('otpInput').classList.remove('is-invalid');
+    showLoading('Đang xác thực...');
+    
+    fetch('/renter/change-password/verify-otp', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            otp: otp,
+            new_password: document.getElementById('newPassword').value,
+            confirm_password: document.getElementById('confirmNewPassword').value
+        })
+    })
+    .then(response => {
+        console.log('Verify response status:', response.status);
+        
+        // Try to parse JSON first
+        return response.json().then(data => {
+            console.log('Verify parsed JSON data:', data);
+            return { data, status: response.status, ok: response.ok };
+        }).catch(() => {
+            // If not JSON, get text
+            return response.text().then(text => {
+                console.log('Verify response text:', text);
+                return { 
+                    data: { success: false, message: text || 'Có lỗi xảy ra. Vui lòng thử lại.' }, 
+                    status: response.status, 
+                    ok: response.ok 
+                };
+            });
+        });
+    })
+    .then(({ data, status, ok }) => {
+        hideLoading();
+        console.log('Verify final data:', data);
+        
+        if (data.success === true) {
+            showStep('success');
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+        } else {
+            document.getElementById('otpInput').classList.add('is-invalid');
+            document.getElementById('otpError').textContent = data.message || 'Mã OTP không đúng';
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        console.error('Verify fetch error:', error);
+        
+        let errorMessage = 'Có lỗi xảy ra. Vui lòng thử lại.';
+        
+        // Try to extract error message from response
+        if (error.message && error.message.includes('HTTP')) {
+            if (error.message.includes('HTTP 500')) {
+                errorMessage = 'Lỗi server. Vui lòng thử lại sau.';
+            } else if (error.message.includes('HTTP 400')) {
+                errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.';
+            } else if (error.message.includes('HTTP 403')) {
+                errorMessage = 'Bạn không có quyền thực hiện thao tác này.';
+            } else if (error.message.includes('HTTP 401')) {
+                errorMessage = 'Vui lòng đăng nhập lại.';
+            }
+        }
+        
+        document.getElementById('otpInput').classList.add('is-invalid');
+        document.getElementById('otpError').textContent = errorMessage;
+    });
+}
+
+// Reset modal when opened
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('changePasswordModal');
+    
+    // Function to completely cancel password change process (reset everything)
+    function cancelPasswordChange() {
+        // Clear any pending OTP from session
+        fetch('/renter/change-password/cancel', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }).catch(error => {
+            console.log('[DEBUG] Cancel request failed:', error);
+        });
+        
+        // Reset form and UI
+        const passwordChangeForm = document.getElementById('passwordChangeForm');
+        const otpForm = document.getElementById('otpForm');
+        const passwordStrength = document.getElementById('passwordStrength');
+        const passwordMatch = document.getElementById('passwordMatch');
+        
+        // Reset form inputs manually to ensure they're empty
+        const currentPasswordInput = document.getElementById('currentPassword');
+        const newPasswordInput = document.getElementById('newPassword');
+        const confirmPasswordInput = document.getElementById('confirmNewPassword');
+        const otpInput = document.getElementById('otpInput');
+        
+        if (currentPasswordInput) currentPasswordInput.value = '';
+        if (newPasswordInput) newPasswordInput.value = '';
+        if (confirmPasswordInput) confirmPasswordInput.value = '';
+        if (otpInput) otpInput.value = '';
+        
+        // Also call form reset for good measure
+        if (passwordChangeForm) passwordChangeForm.reset();
+        if (otpForm) otpForm.reset();
+        
+        // Clear errors
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        document.querySelectorAll('.alert').forEach(el => el.remove());
+        
+        // Reset UI
+        if (passwordStrength) passwordStrength.innerHTML = '';
+        if (passwordMatch) passwordMatch.innerHTML = '';
+        
+        // Reset current step to form
+        currentStep = 'form';
+        
+        // Force show form step and hide all others
+        const passwordFormStep = document.getElementById('passwordFormStep');
+        const otpVerificationStep = document.getElementById('otpVerificationStep');
+        const successState = document.getElementById('successState');
+        const loadingState = document.getElementById('loadingState');
+        
+        if (passwordFormStep) passwordFormStep.style.display = 'block';
+        if (otpVerificationStep) {
+            otpVerificationStep.style.display = 'none';
+            otpVerificationStep.classList.remove('show');
+        }
+        if (successState) successState.style.display = 'none';
+        if (loadingState) loadingState.style.display = 'none';
+        
+        // Reset button states
+        const sendOtpBtn = document.getElementById('sendOtpBtn');
+        const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+        const resendOtpBtn = document.getElementById('resendOtpBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        
+        if (sendOtpBtn) sendOtpBtn.style.display = 'inline-block';
+        if (verifyOtpBtn) verifyOtpBtn.style.display = 'none';
+        if (resendOtpBtn) resendOtpBtn.style.display = 'none';
+        if (cancelBtn) cancelBtn.innerHTML = '<i class="fas fa-times me-1"></i>Hủy';
+        
+        // Clear countdown
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+        }
+        
+        // Reset modal state
+        modalInitialized = false;
+    }
+    
+    // Function to go back to form step (keep form data, just go back from OTP step)
+    function goBackToForm() {
+        console.log('[DEBUG] Going back to form step');
+        
+        // Clear OTP from session but keep form data
+        fetch('/renter/change-password/cancel', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }).catch(error => {
+            console.log('[DEBUG] Cancel request failed:', error);
+        });
+        
+        // Clear OTP input and errors
+        const otpInput = document.getElementById('otpInput');
+        if (otpInput) {
+            otpInput.value = '';
+            otpInput.classList.remove('is-invalid');
+        }
+        
+        // Clear OTP errors
+        const otpError = document.getElementById('otpError');
+        if (otpError) otpError.textContent = '';
+        
+        // Clear any validation states from form inputs
+        const currentPasswordInput = document.getElementById('currentPassword');
+        const newPasswordInput = document.getElementById('newPassword');
+        const confirmPasswordInput = document.getElementById('confirmNewPassword');
+        
+        if (currentPasswordInput) currentPasswordInput.classList.remove('is-invalid');
+        if (newPasswordInput) newPasswordInput.classList.remove('is-invalid');
+        if (confirmPasswordInput) confirmPasswordInput.classList.remove('is-invalid');
+        
+        // Clear alerts
+        document.querySelectorAll('.alert').forEach(el => el.remove());
+        
+        // Reset current step to form
+        currentStep = 'form';
+        
+        // Show form step and hide OTP step
+        const passwordFormStep = document.getElementById('passwordFormStep');
+        const otpVerificationStep = document.getElementById('otpVerificationStep');
+        const successState = document.getElementById('successState');
+        const loadingState = document.getElementById('loadingState');
+        
+        if (passwordFormStep) passwordFormStep.style.display = 'block';
+        if (otpVerificationStep) otpVerificationStep.style.display = 'none';
+        if (successState) successState.style.display = 'none';
+        if (loadingState) loadingState.style.display = 'none';
+        
+        // Reset button states
+        const sendOtpBtn = document.getElementById('sendOtpBtn');
+        const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+        const resendOtpBtn = document.getElementById('resendOtpBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        
+        if (sendOtpBtn) sendOtpBtn.style.display = 'inline-block';
+        if (verifyOtpBtn) verifyOtpBtn.style.display = 'none';
+        if (resendOtpBtn) resendOtpBtn.style.display = 'none';
+        if (cancelBtn) cancelBtn.innerHTML = '<i class="fas fa-times me-1"></i>Hủy';
+        
+        // Clear countdown
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+        }
+        
+        console.log('[DEBUG] Back to form step, form data preserved');
+    }
+    
+    modal.addEventListener('show.bs.modal', function() {
+        console.log('[DEBUG] Modal show event triggered');
+        
+        // Quick reset before modal shows
+        currentStep = 'form';
+        modalInitialized = true;
+        
+        // Reset all form inputs to empty
+        const currentPasswordInput = document.getElementById('currentPassword');
+        const newPasswordInput = document.getElementById('newPassword');
+        const confirmPasswordInput = document.getElementById('confirmNewPassword');
+        const otpInput = document.getElementById('otpInput');
+        
+        if (currentPasswordInput) currentPasswordInput.value = '';
+        if (newPasswordInput) newPasswordInput.value = '';
+        if (confirmPasswordInput) confirmPasswordInput.value = '';
+        if (otpInput) otpInput.value = '';
+        
+        // Clear any validation states
+        document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        document.querySelectorAll('.alert').forEach(el => el.remove());
+        
+        // Clear password strength and match indicators
+        const passwordStrength = document.getElementById('passwordStrength');
+        const passwordMatch = document.getElementById('passwordMatch');
+        if (passwordStrength) passwordStrength.innerHTML = '';
+        if (passwordMatch) passwordMatch.innerHTML = '';
+        
+        // Simple reset without heavy DOM manipulation
+        const passwordFormStep = document.getElementById('passwordFormStep');
+        const otpVerificationStep = document.getElementById('otpVerificationStep');
+        const successState = document.getElementById('successState');
+        const loadingState = document.getElementById('loadingState');
+        
+        if (passwordFormStep) passwordFormStep.style.display = 'block';
+        if (otpVerificationStep) otpVerificationStep.style.display = 'none';
+        if (successState) successState.style.display = 'none';
+        if (loadingState) loadingState.style.display = 'none';
+        
+        // Reset button states
+        const sendOtpBtn = document.getElementById('sendOtpBtn');
+        const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+        const resendOtpBtn = document.getElementById('resendOtpBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        
+        if (sendOtpBtn) sendOtpBtn.style.display = 'inline-block';
+        if (verifyOtpBtn) verifyOtpBtn.style.display = 'none';
+        if (resendOtpBtn) resendOtpBtn.style.display = 'none';
+        if (cancelBtn) cancelBtn.innerHTML = '<i class="fas fa-times me-1"></i>Hủy';
+        
+        // Clear session in background (non-blocking)
+        fetch('/renter/change-password/cancel', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        }).catch(error => {
+            console.log('[DEBUG] Cancel request failed:', error);
+        });
+        
+        console.log('[DEBUG] Modal reset completed, currentStep:', currentStep);
+    });
+    
+    // Handle modal header close button (X) - always cancel completely
+    const modalCloseBtn = modal.querySelector('.btn-close');
+    if (modalCloseBtn) {
+        modalCloseBtn.addEventListener('click', function() {
+            cancelPasswordChange();
+        });
+    }
+    
+    // Handle cancel button click - smart behavior based on current step
+    const cancelBtn = document.getElementById('cancelBtn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+            if (currentStep === 'otp') {
+                // If we're in OTP step, go back to form (preserve form data)
+                goBackToForm();
+            } else {
+                // If we're in form step, cancel completely
+                cancelPasswordChange();
+            }
+        });
+    }
+    
+    // Handle modal close (X button or clicking outside) - always cancel completely
+    modal.addEventListener('hidden.bs.modal', function() {
+        // Ensure complete reset when modal is hidden
+        cancelPasswordChange();
+        // Force reset current step
+        currentStep = 'form';
+    });
+    
+    // Handle clicking outside modal - always cancel completely
+    modal.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            cancelPasswordChange();
+        }
+    });
+    
+    // Auto-close success modal after 3 seconds
+    modal.addEventListener('hidden.bs.modal', function() {
+        if (currentStep === 'success') {
+            setTimeout(() => {
+                const modalInstance = bootstrap.Modal.getInstance(modal);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+            }, 3000);
+        }
+    });
+});
+</script>
+{% endblock %} 

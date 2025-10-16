@@ -1,0 +1,620 @@
+<!-- Owner Management Section Content -->
+<div class="p-3">
+  <!-- Filter Section -->
+  <div class="border rounded p-3 mb-3">
+    <div class="d-flex align-items-center justify-content-between">
+      <!-- Left: Status Tabs -->
+      <div class="d-flex gap-2">
+        <a
+          href="{{ url_for('admin_dashboard.dashboard', role=current_role_filter, status='all', search=search_query) }}#owner"
+          class="btn btn-sm {% if not current_filter or current_filter == 'all' %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+        >
+          Tất cả
+          <span class="badge bg-light text-dark ms-1">{{ total_count }}</span>
+        </a>
+        <a
+          href="{{ url_for('admin_dashboard.dashboard', role=current_role_filter, status='active', search=search_query) }}#owner"
+          class="btn btn-sm {% if current_filter == 'active' %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+        >
+          Hoạt động
+          <span class="badge bg-light text-dark ms-1">{{ active_count }}</span>
+        </a>
+        <a
+          href="{{ url_for('admin_dashboard.dashboard', role=current_role_filter, status='inactive', search=search_query) }}#owner"
+          class="btn btn-sm {% if current_filter == 'inactive' %}btn-primary{% else %}btn-outline-secondary{% endif %}"
+        >
+          Ngừng hoạt động
+          <span class="badge bg-light text-dark ms-1"
+            >{{ inactive_count }}</span
+          >
+        </a>
+      </div>
+
+      <!-- Right: Controls -->
+      <div class="d-flex align-items-center gap-2">
+        <!-- Search -->
+        <form
+          method="GET"
+          action="{{ url_for('admin_dashboard.dashboard') }}#owner"
+          class="d-flex"
+        >
+          {% if current_filter %}
+          <input type="hidden" name="status" value="{{ current_filter }}" />
+          {% endif %} {% if current_role_filter %}
+          <input type="hidden" name="role" value="{{ current_role_filter }}" />
+          {% endif %}
+          <div class="search-box d-flex gap-2 align-items-center">
+            <input
+              type="text"
+              name="search"
+              value="{{ search_query }}"
+              class="search-input form-control form-control-sm"
+              placeholder="Tìm kiếm..."
+              autocomplete="off"
+            />
+            <button type="submit" class="search-btn btn btn-sm">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+        </form>
+
+        <!-- Import statistics dropdown component -->
+        {% from 'admin/components/stats_dropdown.html' import stats_dropdown %}
+
+        <!-- Filter Dropdown -->
+        {{ stats_dropdown('filterSelect', [ {'value': 'all', 'text': 'Tất cả',
+        'icon': 'filter'}, {'value': 'owner', 'text': 'Owner', 'icon': 'home'},
+        {'value': 'renter', 'text': 'Renter', 'icon': 'user'} ],
+        current_role_filter if current_role_filter else 'all') }}
+
+        <!-- Sort Dropdown -->
+        {{ stats_dropdown('sortSelect', [ {'value': '', 'text': 'Sắp xếp',
+        'icon': 'sort'}, {'value': 'id_asc', 'text': 'ID tăng dần', 'icon':
+        'arrow-up'}, {'value': 'id_desc', 'text': 'ID giảm dần', 'icon':
+        'arrow-down'}, {'value': 'name_asc', 'text': 'Tên A-Z', 'icon':
+        'sort-alpha-up'}, {'value': 'name_desc', 'text': 'Tên Z-A', 'icon':
+        'sort-alpha-down'}, {'value': 'date_desc', 'text': 'Mới nhất', 'icon':
+        'calendar-check'}, {'value': 'date_asc', 'text': 'Cũ nhất', 'icon':
+        'calendar-plus'} ], request.args.get('sort', '')) }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Cards for Owner Management -->
+  <div class="owner-stats-overview mb-3">
+    <div class="row g-2">
+      <!-- Tổng tài khoản -->
+      <div class="col-md-2">
+        <div class="stat-card bg-white p-2 rounded shadow-sm">
+          <h6 class="mb-1 text-muted small">Tổng tài khoản</h6>
+          <h5 class="mb-1">{{ stats.total_owners + stats.total_renters }}</h5>
+          <small class="text-muted"
+            >+{{ weekly_stats.new_owners_month + weekly_stats.new_renters_month
+            }} trong tháng này</small
+          >
+        </div>
+      </div>
+
+      <!-- Tổng Owner -->
+      <div class="col-md-2">
+        <div class="stat-card bg-white p-2 rounded shadow-sm">
+          <h6 class="mb-1 text-muted small">Tổng Owner</h6>
+          <h5 class="mb-1">{{ stats.total_owners }}</h5>
+          <small class="text-muted"
+            >+{{ weekly_stats.new_owners_month }} trong tháng này</small
+          >
+        </div>
+      </div>
+
+      <!-- Tổng Renter -->
+      <div class="col-md-2">
+        <div class="stat-card bg-white p-2 rounded shadow-sm">
+          <h6 class="mb-1 text-muted small">Tổng Renter</h6>
+          <h5 class="mb-1">{{ stats.total_renters }}</h5>
+          <small class="text-muted"
+            >+{{ weekly_stats.new_renters_month }} trong tháng này</small
+          >
+        </div>
+      </div>
+
+      <!-- Tài khoản thêm trong tuần -->
+      <div class="col-md-2">
+        <div class="stat-card bg-white p-2 rounded shadow-sm">
+          <h6 class="mb-1 text-muted small">Tài khoản thêm trong tuần</h6>
+          <h5 class="mb-1">
+            {{ weekly_stats.new_owners + weekly_stats.new_renters }}
+          </h5>
+          <small class="text-success">
+            {% if (stats.total_owners + stats.total_renters) > 0 %} +{{
+            (((weekly_stats.new_owners + weekly_stats.new_renters) /
+            (stats.total_owners + stats.total_renters)) * 100)|round(1) }}% so
+            với tuần trước {% else %} +0% so với tuần trước {% endif %}
+          </small>
+        </div>
+      </div>
+
+      <!-- Renter thêm trong tháng -->
+      <div class="col-md-2">
+        <div class="stat-card bg-white p-2 rounded shadow-sm">
+          <h6 class="mb-1 text-muted small">Renter thêm trong tháng</h6>
+          <h5 class="mb-1">{{ weekly_stats.new_renters_month }}</h5>
+          <small class="text-success">
+            {% if stats.total_renters > 0 %} +{{
+            ((weekly_stats.new_renters_month / stats.total_renters) *
+            100)|round(1) }}% so với tháng trước {% else %} +0% so với tháng
+            trước {% endif %}
+          </small>
+        </div>
+      </div>
+
+      <!-- Owner thêm trong tháng -->
+      <div class="col-md-2">
+        <div class="stat-card bg-white p-2 rounded shadow-sm">
+          <h6 class="mb-1 text-muted small">Owner thêm trong tháng</h6>
+          <h5 class="mb-1">{{ weekly_stats.new_owners_month }}</h5>
+          <small class="text-success">
+            {% if stats.total_owners > 0 %} +{{ ((weekly_stats.new_owners_month
+            / stats.total_owners) * 100)|round(1) }}% so với tháng trước {% else
+            %} +0% so với tháng trước {% endif %}
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Header -->
+  <div class="table-header d-flex justify-content-between align-items-center">
+    <h2 class="table-title h4 mb-0">Danh sách tài khoản</h2>
+    <button
+      class="add-room-btn btn btn-success d-flex align-items-center gap-2"
+      data-bs-toggle="modal"
+      data-bs-target="#addOwnerModal"
+    >
+      <i class="fas fa-plus"></i>
+      Thêm owner
+    </button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>
+            <input type="checkbox" id="checkAll" />
+          </th>
+          <th>ID</th>
+          <th>Tên</th>
+          <th>Email</th>
+          <th>Số điện thoại</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users.items %}
+        <tr data-status="{{ 'active' if user.is_active else 'inactive' }}">
+          <td>
+            <input type="checkbox" name="user_id" value="{{ user.id }}" />
+          </td>
+          <td>#{{ user.id }}</td>
+          <td>{{ user.full_name if user.full_name else user.username }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.phone if user.phone else 'Chưa cập nhật' }}</td>
+          <td>
+            <span
+              class="badge {% if user.role == 'Owner' %}bg-primary{% elif user.role == 'Renter' %}bg-success{% else %}bg-warning{% endif %}"
+            >
+              {{ user.role }}
+            </span>
+          </td>
+          <td>
+            <span
+              class="badge {% if user.is_active %}bg-success{% else %}badge-inactive{% endif %}"
+            >
+              {{ 'Hoạt động' if user.is_active else 'Ngừng hoạt động' }}
+            </span>
+          </td>
+          <td class="text-end">
+            <div class="dropdown">
+              <button
+                type="button"
+                class="action-button btn btn-outline-secondary btn-sm dropdown-toggle d-flex align-items-center justify-content-center"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                data-bs-auto-close="true"
+              >
+                <i class="fas fa-ellipsis-vertical"></i>
+              </button>
+              <ul
+                class="dropdown-menu dropdown-menu-end shadow"
+                data-bs-popper="static"
+              >
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="#"
+                    data-bs-toggle="modal"
+                    data-bs-target="#ownerDetailModal{{ user.id }}"
+                  >
+                    <i class="fas fa-eye me-2"></i>
+                    <span>Xem chi tiết</span>
+                  </a>
+                </li>
+                {% if user.role_type != 'admin' %}
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <button
+                    type="button"
+                    class="dropdown-item text-{{ 'danger' if user.is_active else 'success' }}"
+                    data-action="toggle-status"
+                    data-user-id="{{ user.id }}"
+                    data-role-type="{{ user.role_type }}"
+                    data-is-active="{{ user.is_active|lower }}"
+                    data-username="{{ user.full_name if user.full_name else user.username }}"
+                    data-email="{{ user.email }}"
+                    data-phone="{{ user.phone_number if user.phone_number else 'Không có' }}"
+                  >
+                    <i
+                      class="fas fa-{{ 'ban' if user.is_active else 'check-circle' }} me-2"
+                    ></i>
+                    <span
+                      >{{ 'Vô hiệu hóa' if user.is_active else 'Kích hoạt'
+                      }}</span
+                    >
+                  </button>
+                </li>
+                <li>
+                  <button
+                    type="button"
+                    class="dropdown-item text-danger"
+                    data-user-id="{{ user.id }}"
+                    data-role-type="{{ user.role_type }}"
+                    onclick="deleteUser(this)"
+                  >
+                    <i class="fas fa-trash-alt me-2"></i>
+                    <span>Xóa tài khoản</span>
+                  </button>
+                </li>
+                {% endif %}
+              </ul>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% from 'admin/components/pagination.html' import pagination %} {{ pagination(
+  pagination_obj=users, base_url='admin_dashboard.dashboard',
+  base_params={'role': current_role_filter, 'status': current_filter, 'search':
+  search_query}, anchor='#owner', show_info=true, size='normal' ) }}
+</div>
+
+<script>
+  // Initialize Bootstrap dropdowns immediately
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log("🔄 Initializing dropdowns...");
+
+    // Initialize all dropdowns immediately
+    const actionButtons = document.querySelectorAll(
+      ".action-button.dropdown-toggle"
+    );
+
+    console.log("🔍 Found action buttons:", actionButtons.length);
+
+    actionButtons.forEach(function (button, index) {
+      try {
+        // Force create new Bootstrap dropdown instance
+        new bootstrap.Dropdown(button, {
+          autoClose: true,
+          boundary: "viewport",
+        });
+        console.log(`✅ Dropdown ${index + 1} initialized`);
+
+        // Add direct event handlers to dropdown items
+        const dropdownMenu = button.nextElementSibling;
+        if (dropdownMenu && dropdownMenu.classList.contains("dropdown-menu")) {
+          const toggleButtons = dropdownMenu.querySelectorAll(
+            '[data-action="toggle-status"]'
+          );
+          const deleteButtons = dropdownMenu.querySelectorAll(
+            '[onclick*="deleteUser"]'
+          );
+
+          console.log(
+            `🔍 Dropdown ${index + 1} - Found ${
+              toggleButtons.length
+            } toggle buttons, ${deleteButtons.length} delete buttons`
+          );
+
+          // Add click handlers to toggle buttons
+          toggleButtons.forEach(function (toggleBtn) {
+            toggleBtn.addEventListener("click", function (e) {
+              console.log("🔄 Direct toggle button click!");
+              e.preventDefault();
+              e.stopPropagation();
+
+              const userId = this.getAttribute("data-user-id");
+              const userType = this.getAttribute("data-role-type");
+              const isActive = this.getAttribute("data-is-active") === "true";
+              const username = this.getAttribute("data-username");
+              const email = this.getAttribute("data-email");
+              const phone = this.getAttribute("data-phone");
+
+              console.log("📋 Direct toggle data:", {
+                userId,
+                userType,
+                isActive,
+                username,
+              });
+
+              if (window.toggleUserStatus) {
+                window.toggleUserStatus(
+                  userId,
+                  userType,
+                  isActive,
+                  username,
+                  email,
+                  phone
+                );
+              } else {
+                console.error("❌ toggleUserStatus function not found");
+              }
+            });
+          });
+
+          // Add click handlers to delete buttons
+          deleteButtons.forEach(function (deleteBtn) {
+            deleteBtn.addEventListener("click", function (e) {
+              console.log("🗑️ Direct delete button click!");
+              // Let the onclick handler work normally
+            });
+          });
+        }
+      } catch (error) {
+        console.error(
+          `❌ Failed to create dropdown for action button ${index + 1}:`,
+          error
+        );
+      }
+    });
+
+    // Add click handler for dropdown items using event delegation
+    document.addEventListener("click", function (e) {
+      console.log("🖱️ Click detected on:", e.target);
+      console.log("🖱️ Click target classes:", e.target.className);
+      console.log("🖱️ Click target tag:", e.target.tagName);
+
+      // Handle toggle status clicks
+      if (e.target.closest('[data-action="toggle-status"]')) {
+        e.preventDefault();
+        const button = e.target.closest('[data-action="toggle-status"]');
+        console.log("🔄 Toggle status clicked:", button);
+
+        // Get button data
+        const userId = button.getAttribute("data-user-id");
+        const userType = button.getAttribute("data-role-type");
+        const isActive = button.getAttribute("data-is-active") === "true";
+        const username = button.getAttribute("data-username");
+        const email = button.getAttribute("data-email");
+        const phone = button.getAttribute("data-phone");
+
+        console.log("📋 Button data:", {
+          userId,
+          userType,
+          isActive,
+          username,
+        });
+
+        // Call the function from admin-dashboard-tables.js if available
+        if (window.toggleUserStatus) {
+          window.toggleUserStatus(
+            userId,
+            userType,
+            isActive,
+            username,
+            email,
+            phone
+          );
+        } else {
+          console.error("❌ toggleUserStatus function not found");
+        }
+      }
+
+      // Handle delete clicks
+      if (e.target.closest('[onclick*="deleteUser"]')) {
+        console.log("🗑️ Delete clicked");
+        // Let the onclick handler work normally
+      }
+
+      // Debug: Check if clicking on dropdown items
+      if (e.target.closest(".dropdown-item")) {
+        console.log(
+          "📋 Dropdown item clicked:",
+          e.target.closest(".dropdown-item")
+        );
+      }
+
+      // Debug: Check if clicking on dropdown menu
+      if (e.target.closest(".dropdown-menu")) {
+        console.log(
+          "📋 Dropdown menu clicked:",
+          e.target.closest(".dropdown-menu")
+        );
+      }
+    });
+
+    // Close dropdowns when modal opens
+    document.addEventListener("show.bs.modal", function (e) {
+      // Use Bootstrap API to close all dropdowns
+      document
+        .querySelectorAll('[data-bs-toggle="dropdown"]')
+        .forEach(function (toggle) {
+          const dropdown = bootstrap.Dropdown.getInstance(toggle);
+          if (dropdown) {
+            dropdown.hide();
+          }
+        });
+    });
+  });
+</script>
+
+<style>
+  /* Bootstrap-based Search Box Styles */
+
+  .search-input {
+    /* Sử dụng Bootstrap form-control với custom CSS minimal */
+    width: 200px;
+    height: 36px;
+    font-size: 0.875rem;
+    border-color: #e2e8f0;
+    background: #f8fafc;
+  }
+
+  .search-input:focus {
+    border-color: #9ed649;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(158, 214, 73, 0.1);
+  }
+
+  .search-btn {
+    /* Sử dụng Bootstrap btn classes với custom colors */
+    height: 36px;
+    background: #8ab82f;
+    border-color: #8ab82f;
+  }
+
+  .search-btn:hover {
+    background: #7ba329;
+    border-color: #7ba329;
+    transform: translateY(-1px);
+  }
+
+  /* Bootstrap Dropdown Custom Colors */
+  .dropdown-toggle:hover {
+    border-color: #9ed649;
+    color: #9ed649;
+    background: rgba(158, 214, 73, 0.1);
+  }
+
+  .dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #8ab82f;
+  }
+
+  /* Action Button Bootstrap Integration */
+  .action-button {
+    /* Sử dụng Bootstrap btn-outline-secondary base */
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  /* Bootstrap Pagination Custom Colors */
+  .page-link:hover {
+    color: #8ab82f;
+    background-color: rgba(138, 184, 47, 0.1);
+    border-color: #8ab82f;
+    transform: translateY(-1px);
+  }
+
+  .page-item.active .page-link {
+    background-color: #8ab82f;
+    border-color: #8ab82f;
+  }
+
+  .page-item.active .page-link:hover {
+    background-color: #7ba329;
+    border-color: #7ba329;
+  }
+
+  .page-link:focus {
+    box-shadow: 0 0 0 3px rgba(138, 184, 47, 0.2);
+  }
+
+  /* Bootstrap Badge Customization */
+  .badge-inactive {
+    /* Sử dụng Bootstrap bg-secondary base */
+    background-color: #6c757d !important;
+  }
+
+  /* Bootstrap Button Loading States */
+  .btn .fa-spinner {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Bootstrap Table Row Animations */
+  .row-updating {
+    background-color: #f8f9fa;
+    transition: background-color 0.3s ease;
+  }
+
+  .row-success {
+    background-color: #d4edda;
+    animation: flash-success 1s ease-out;
+  }
+
+  @keyframes flash-success {
+    0% {
+      background-color: #d4edda;
+    }
+    100% {
+      background-color: transparent;
+    }
+  }
+
+  /* Bootstrap Card-based Table Header */
+  .table-header {
+    /* Sử dụng Bootstrap d-flex, justify-content-between, align-items-center */
+    padding: 0.75rem 1rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    border: 1px solid #e2e8f0;
+  }
+
+  .table-title {
+    /* Sử dụng Bootstrap h4 hoặc h5 class */
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+  }
+
+  /* Bootstrap Button for Add Owner */
+  .add-room-btn {
+    /* Sử dụng Bootstrap btn btn-success base */
+    background: #9ed649;
+    border-color: #9ed649;
+    box-shadow: 0 2px 4px rgba(158, 214, 73, 0.3);
+  }
+
+  .add-room-btn:hover {
+    background: #8ab82f;
+    border-color: #8ab82f;
+    box-shadow: 0 2px 6px rgba(158, 214, 73, 0.4);
+    transform: translateY(-1px);
+  }
+
+  /* Bootstrap Dropdown Arrow Override */
+  .action-button.dropdown-toggle::after {
+    display: none;
+  }
+
+  /* Bootstrap Action Button Focus */
+  .action-button:focus {
+    box-shadow: 0 0 0 0.2rem rgba(158, 214, 73, 0.25);
+  }
+</style>

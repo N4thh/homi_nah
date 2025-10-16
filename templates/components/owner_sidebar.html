@@ -1,0 +1,71 @@
+<!-- Owner Sidebar Component -->
+<aside class="owner-sidebar">
+  <div class="sidebar-header">
+    <h5 class="sidebar-title">
+      <i class="fas fa-home me-2"></i>
+      Owner Panel
+    </h5>
+  </div>
+
+  <ul class="sidebar-menu">
+    <li class="sidebar-menu-item">
+      <a
+        href="{{ url_for('owner_dashboard.dashboard') }}"
+        class="sidebar-menu-link {{ 'active' if request.endpoint == 'owner_dashboard.dashboard' }}"
+      >
+        <i class="fas fa-tachometer-alt"></i>
+        <span>Dashboard</span>
+      </a>
+    </li>
+
+    <li class="sidebar-menu-item">
+      <a
+        href="{{ url_for('owner_homes.homes') }}"
+        class="sidebar-menu-link {{ 'active' if request.endpoint.startswith('owner_homes') }}"
+      >
+        <i class="fas fa-building"></i>
+        <span>Quản lý homestay</span>
+      </a>
+    </li>
+
+    <li class="sidebar-menu-item">
+      <a
+        href="{{ url_for('owner_bookings.bookings') }}"
+        class="sidebar-menu-link {{ 'active' if request.endpoint.startswith('owner_bookings') }}"
+      >
+        <i class="fas fa-calendar-check"></i>
+        <span>Đặt phòng</span>
+      </a>
+    </li>
+
+    <li class="sidebar-menu-item">
+      <a
+        href="{{ url_for('owner_profile.profile') }}"
+        class="sidebar-menu-link {{ 'active' if request.endpoint.startswith('owner_profile') }}"
+      >
+        <i class="fas fa-user"></i>
+        <span>Hồ sơ</span>
+      </a>
+    </li>
+
+    <li class="sidebar-menu-item">
+      <a
+        href="{{ url_for('owner_profile.analytics') }}"
+        class="sidebar-menu-link {{ 'active' if request.endpoint == 'owner_profile.analytics' }}"
+      >
+        <i class="fas fa-chart-line"></i>
+        <span>Phân tích</span>
+      </a>
+    </li>
+  </ul>
+
+  <div class="sidebar-footer">
+    <a
+      href="{{ url_for('owner_profile.settings') }}"
+      class="sidebar-footer-link"
+    >
+      <i class="fas fa-cog me-2"></i>
+      Cài đặt
+    </a>
+  </div>
+</aside>

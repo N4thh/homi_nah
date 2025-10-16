@@ -1,0 +1,75 @@
+<!-- Confirmation Modal Component -->
+<div
+  class="modal fade"
+  id="confirmationModal"
+  tabindex="-1"
+  aria-labelledby="confirmationModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmationModalLabel">
+          <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+          Xác nhận hành động
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmationMessage">
+          Bạn có chắc chắn muốn thực hiện hành động này?
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-2"></i>Hủy
+        </button>
+        <button type="button" class="btn btn-danger" id="confirmButton">
+          <i class="fas fa-check me-2"></i>Xác nhận
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Confirmation Modal JavaScript
+  document.addEventListener("DOMContentLoaded", function () {
+    const confirmationModal = new bootstrap.Modal(
+      document.getElementById("confirmationModal")
+    );
+    const confirmButton = document.getElementById("confirmButton");
+    const confirmationMessage = document.getElementById(
+      "confirmationModalLabel"
+    );
+
+    // Function to show confirmation modal
+    window.showConfirmation = function (
+      message,
+      callback,
+      buttonText = "Xác nhận",
+      buttonClass = "btn-danger"
+    ) {
+      document.getElementById("confirmationMessage").textContent = message;
+      confirmButton.textContent = buttonText;
+      confirmButton.className = `btn ${buttonClass}`;
+
+      // Remove previous event listeners
+      const newConfirmButton = confirmButton.cloneNode(true);
+      confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
+
+      // Add new event listener
+      newConfirmButton.addEventListener("click", function () {
+        confirmationModal.hide();
+        if (callback) callback();
+      });
+
+      confirmationModal.show();
+    };
+  });
+</script>

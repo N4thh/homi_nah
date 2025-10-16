@@ -1,0 +1,644 @@
+{% extends 'base.html' %} {% block title %}Hồ sơ Admin{% endblock %} {% block
+extra_css %}
+<style>
+  body {
+    background: #f0f2f5;
+    min-height: 100vh;
+    padding: 1rem 2rem;
+  }
+
+  /* Navbar Override for Admin Page */
+  .navbar.navbar-expand-lg.navbar-dark.bg-primary {
+    background: linear-gradient(
+      135deg,
+      rgba(139, 195, 74, 0.95),
+      rgba(104, 159, 56, 0.95)
+    ) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1) !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: auto !important;
+    z-index: 1050 !important;
+  }
+
+  .navbar .navbar-nav.me-auto {
+    flex-grow: 0;
+  }
+
+  .navbar .navbar-nav.align-items-center {
+    margin-left: auto;
+  }
+
+  .navbar .navbar-brand {
+    margin-right: 2rem;
+    margin-left: 0;
+    display: flex;
+    align-items: center;
+    padding: 0;
+  }
+
+  .navbar .container {
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .navbar .navbar-brand img {
+    filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.3));
+    vertical-align: middle;
+  }
+
+  .navbar .nav-link {
+    color: white !important;
+    font-weight: 500;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  .navbar .brand-text {
+    color: white !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  #languageToggle {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+  }
+
+  #languageToggle span {
+    color: white !important;
+  }
+
+  .navbar .dropdown-toggle {
+    color: white !important;
+  }
+
+  .container-fluid {
+    padding-top: 0 !important;
+    margin-top: -1rem !important;
+  }
+
+  /* Sidebar */
+  .admin-sidebar {
+    width: 250px;
+    background: linear-gradient(180deg, #9ed649 0%, #8ab82f 100%);
+    min-height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    padding-top: 80px;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1051;
+  }
+
+  /* Main Content */
+  .admin-main {
+    flex: 1;
+    margin-left: 250px;
+    padding: 2rem;
+    position: relative;
+  }
+
+  /* Ẩn navbar mặc định từ base template */
+  nav.navbar {
+    display: none !important;
+  }
+
+  .container-fluid {
+    padding-top: 0 !important;
+    margin-top: -1rem !important;
+  }
+
+  .admin-header {
+    background: white;
+    padding: 1rem 0;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .admin-header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1400px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .brand-section {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .brand-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+
+  .brand-logo:hover {
+    background: #f8fafc;
+    transform: translateY(-1px);
+  }
+
+  .brand-logo img {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+  }
+
+  .brand-logo span {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+    letter-spacing: 0.5px;
+  }
+
+  .page-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .vertical-divider {
+    width: 1px;
+    height: 32px;
+    background: #e2e8f0;
+  }
+
+  .page-title-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .page-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+  }
+
+  .page-subtitle {
+    font-size: 0.875rem;
+    color: #64748b;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    color: #64748b;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .back-button:hover {
+    background: #f1f5f9;
+    color: #2c3e50;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .back-button i {
+    font-size: 0.875rem;
+  }
+
+  /* Responsive styles */
+  @media (max-width: 768px) {
+    .admin-header-content {
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1rem;
+    }
+
+    .brand-section {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .vertical-divider {
+      display: none;
+    }
+
+    .page-info {
+      width: 100%;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .header-actions {
+      width: 100%;
+    }
+
+    .back-button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  .profile-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    padding: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #9ed649, #8ab82f);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+    font-weight: 600;
+  }
+
+  .profile-info h3 {
+    margin: 0 0 0.5rem 0;
+    color: #2c3e50;
+    font-weight: 600;
+  }
+
+  .profile-info p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.875rem;
+  }
+
+  .profile-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #9ed649;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-label {
+    color: #64748b;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .info-section {
+    margin-bottom: 2rem;
+  }
+
+  .info-section h5 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #9ed649;
+  }
+
+  .info-table {
+    width: 100%;
+  }
+
+  .info-table td {
+    padding: 0.75rem 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .info-table td:first-child {
+    color: #64748b;
+    width: 30%;
+    font-weight: 500;
+  }
+
+  .info-table td:last-child {
+    color: #2c3e50;
+  }
+
+  .badge {
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .badge-success {
+    background: rgba(158, 214, 73, 0.1);
+    color: #9ed649;
+  }
+
+  .badge-danger {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+  }
+
+  .badge-warning {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: #9ed649;
+    border: 1px solid #9ed649;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #8ab82f;
+    border-color: #8ab82f;
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+  }
+
+  .btn-secondary:hover {
+    background: #f1f5f9;
+    border-color: #d1d5db;
+    color: #2c3e50;
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    body {
+      padding: 1rem;
+    }
+
+    .profile-header {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .profile-stats {
+      grid-template-columns: 1fr;
+    }
+
+    .action-buttons {
+      flex-direction: column;
+    }
+
+    .info-table td:first-child {
+      width: 40%;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="admin-header">
+  <div class="admin-header-content">
+    <div class="brand-section">
+      <a href="{{ url_for('home') }}" class="brand-logo">
+        <img
+          src="{{ url_for('static', filename='data/system/Logo.png') }}"
+          alt="Homi"
+        />
+        <span>Homi</span>
+      </a>
+      <div class="page-info">
+        <div class="vertical-divider"></div>
+        <div class="page-title-section">
+          <h1 class="page-title">Hồ sơ Admin</h1>
+          <div class="page-subtitle">Thông tin tài khoản quản trị</div>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <a href="{{ url_for('admin_dashboard.dashboard') }}" class="back-button">
+        <i class="fas fa-arrow-left"></i>
+        <span>Quay lại Dashboard</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid py-3">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="profile-card">
+        <!-- Profile Header -->
+        <div class="profile-header">
+          <div class="profile-avatar">
+            {{ admin.username[0].upper() if admin.username else 'A' }}
+          </div>
+          <div class="profile-info">
+            <h3>
+              {{ admin.full_name if admin.full_name else admin.username }}
+            </h3>
+            <p>{{ admin.email }}</p>
+            <span
+              class="badge {% if admin.is_super_admin %}badge-danger{% else %}badge-success{% endif %}"
+            >
+              {% if admin.is_super_admin %}Super Admin{% else %}Admin{% endif %}
+            </span>
+          </div>
+        </div>
+
+        <!-- Profile Stats -->
+        <div class="profile-stats">
+          <div class="stat-card">
+            <div class="stat-number">{{ admin.created_at.strftime('%d') }}</div>
+            <div class="stat-label">Ngày tham gia</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">
+              {{ admin.created_at.strftime('%m/%Y') }}
+            </div>
+            <div class="stat-label">Tháng/Năm</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">
+              {% if admin.last_login %} {{ admin.last_login.strftime('%d/%m') }}
+              {% else %} -- {% endif %}
+            </div>
+            <div class="stat-label">Đăng nhập cuối</div>
+          </div>
+        </div>
+
+        <!-- Basic Information -->
+        <div class="info-section">
+          <h5><i class="fas fa-user me-2"></i>Thông tin cơ bản</h5>
+          <table class="info-table">
+            <tr>
+              <td>Username:</td>
+              <td>{{ admin.username }}</td>
+            </tr>
+            <tr>
+              <td>Email:</td>
+              <td>{{ admin.email }}</td>
+            </tr>
+            <tr>
+              <td>Họ và tên:</td>
+              <td>
+                {{ admin.full_name if admin.full_name else 'Chưa cập nhật' }}
+              </td>
+            </tr>
+            <tr>
+              <td>Ngày tạo:</td>
+              <td>{{ admin.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+            </tr>
+            <tr>
+              <td>Đăng nhập cuối:</td>
+              <td>
+                {% if admin.last_login %} {{ admin.last_login.strftime('%d/%m/%Y
+                %H:%M') }} {% else %} Chưa đăng nhập {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <td>Trạng thái:</td>
+              <td>
+                <span class="badge badge-success">Đang hoạt động</span>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Permissions -->
+        <div class="info-section">
+          <h5><i class="fas fa-shield-alt me-2"></i>Quyền hạn</h5>
+          <table class="info-table">
+            <tr>
+              <td>Quyền Super Admin:</td>
+              <td>
+                <span
+                  class="badge {% if admin.is_super_admin %}badge-danger{% else %}badge-secondary{% endif %}"
+                >
+                  {% if admin.is_super_admin %}Có{% else %}Không{% endif %}
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>Quản lý Admin:</td>
+              <td>
+                <span
+                  class="badge {% if admin.can_manage_admins %}badge-success{% else %}badge-secondary{% endif %}"
+                >
+                  {% if admin.can_manage_admins %}Có{% else %}Không{% endif %}
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>Phê duyệt thay đổi:</td>
+              <td>
+                <span
+                  class="badge {% if admin.can_approve_changes %}badge-success{% else %}badge-secondary{% endif %}"
+                >
+                  {% if admin.can_approve_changes %}Có{% else %}Không{% endif %}
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>Xem thống kê:</td>
+              <td>
+                <span
+                  class="badge {% if admin.can_view_all_stats %}badge-success{% else %}badge-secondary{% endif %}"
+                >
+                  {% if admin.can_view_all_stats %}Có{% else %}Không{% endif %}
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>Quản lý người dùng:</td>
+              <td>
+                <span
+                  class="badge {% if admin.can_manage_users %}badge-success{% else %}badge-secondary{% endif %}"
+                >
+                  {% if admin.can_manage_users %}Có{% else %}Không{% endif %}
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <a
+            href="{{ url_for('admin_dashboard.dashboard') }}"
+            class="btn btn-secondary"
+          >
+            <i class="fas fa-arrow-left"></i>
+            Quay lại Dashboard
+          </a>
+          {% if current_user.is_super_admin %}
+          <a
+            href="{{ url_for('admin_users.edit_admin', admin_id=admin.id) }}"
+            class="btn btn-primary"
+          >
+            <i class="fas fa-edit"></i>
+            Chỉnh sửa thông tin
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

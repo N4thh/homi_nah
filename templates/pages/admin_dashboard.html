@@ -1,0 +1,288 @@
+{% extends 'layouts/admin_base.html' %} {% block title %}Admin Dashboard{%
+endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/components.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/layout.css') }}"
+/>
+{% endblock %} {% block page_title %}Dashboard{% endblock %} {% block
+page_subtitle %}Tổng quan hệ thống{% endblock %} {% block admin_content %}
+<!-- Statistics Overview -->
+<div class="dashboard-section">
+  <div class="row mb-4">
+    <div class="col-12">
+      <h3 class="section-title">Thống kê tổng quan</h3>
+    </div>
+  </div>
+
+  {% include 'components/stats_cards.html' %}
+</div>
+
+<!-- Charts Section -->
+<div class="dashboard-section">
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="card">
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <h5 class="card-title mb-0">Biểu đồ doanh thu</h5>
+          <div class="chart-controls">
+            <div class="btn-group" role="group">
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm active"
+                data-period="month"
+              >
+                Tháng
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm"
+                data-period="quarter"
+              >
+                Quý
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm"
+                data-period="year"
+              >
+                Năm
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <canvas id="revenueChart" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Phân bố người dùng</h5>
+        </div>
+        <div class="card-body">
+          <canvas id="userDistributionChart" height="300"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Activities -->
+<div class="dashboard-section">
+  <div class="row">
+    <div class="col-lg-6">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Hoạt động gần đây</h5>
+        </div>
+        <div class="card-body">
+          <div class="activity-list">
+            {% for activity in recent_activities %}
+            <div class="activity-item">
+              <div class="activity-icon">
+                <i
+                  class="fas fa-{{ activity.icon }} text-{{ activity.color }}"
+                ></i>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">{{ activity.title }}</div>
+                <div class="activity-description">
+                  {{ activity.description }}
+                </div>
+                <div class="activity-time">{{ activity.time }}</div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Homestay phổ biến</h5>
+        </div>
+        <div class="card-body">
+          <div class="popular-homes">
+            {% for home in popular_homes %}
+            <div class="popular-home-item">
+              <div class="home-image">
+                {% if home.images %}
+                <img
+                  src="{{ home.images[0].image_url }}"
+                  alt="{{ home.title }}"
+                  loading="lazy"
+                />
+                {% else %}
+                <div class="no-image">
+                  <i class="fas fa-home"></i>
+                </div>
+                {% endif %}
+              </div>
+              <div class="home-info">
+                <div class="home-title">{{ home.title }}</div>
+                <div class="home-location">
+                  {{ home.district }}, {{ home.city }}
+                </div>
+                <div class="home-stats">
+                  <span class="booking-count"
+                    >{{ home.booking_count }} đặt phòng</span
+                  >
+                  <span class="rating"
+                    >{{ home.average_rating|round(1) if home.average_rating else
+                    0 }} ⭐</span
+                  >
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="dashboard-section">
+  <div class="row">
+    <div class="col-md-3">
+      <div class="quick-stat-card">
+        <div class="stat-icon">
+          <i class="fas fa-users text-primary"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-number">{{ total_users }}</div>
+          <div class="stat-label">Tổng người dùng</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="quick-stat-card">
+        <div class="stat-icon">
+          <i class="fas fa-home text-success"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-number">{{ total_homes }}</div>
+          <div class="stat-label">Tổng homestay</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="quick-stat-card">
+        <div class="stat-icon">
+          <i class="fas fa-calendar-check text-warning"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-number">{{ total_bookings }}</div>
+          <div class="stat-label">Tổng đặt phòng</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="quick-stat-card">
+        <div class="stat-icon">
+          <i class="fas fa-dollar-sign text-info"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-number">{{ total_revenue }}</div>
+          <div class="stat-label">Tổng doanh thu</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      // Revenue Chart
+      const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+      const revenueChart = new Chart(revenueCtx, {
+          type: 'line',
+          data: {
+              labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'],
+              datasets: [{
+                  label: 'Doanh thu (VNĐ)',
+                  data: [12000000, 15000000, 18000000, 22000000, 25000000, 28000000, 30000000, 32000000, 28000000, 25000000, 22000000, 20000000],
+                  borderColor: '#9ed649',
+                  backgroundColor: 'rgba(158, 214, 73, 0.1)',
+                  borderWidth: 3,
+                  fill: true,
+                  tension: 0.4
+              }]
+          },
+          options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                  legend: {
+                      display: false
+                  }
+              },
+              scales: {
+                  y: {
+                      beginAtZero: true,
+                      ticks: {
+                          callback: function(value) {
+                              return (value / 1000000).toFixed(0) + 'M';
+                          }
+                      }
+                  }
+              }
+          }
+      });
+
+      // User Distribution Chart
+      const userCtx = document.getElementById('userDistributionChart').getContext('2d');
+      const userChart = new Chart(userCtx, {
+          type: 'doughnut',
+          data: {
+              labels: ['Owners', 'Renters', 'Admins'],
+              datasets: [{
+                  data: [{{ owner_count }}, {{ renter_count }}, {{ admin_count }}],
+                  backgroundColor: ['#9ed649', '#28a745', '#007bff'],
+                  borderWidth: 0
+              }]
+          },
+          options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                  legend: {
+                      position: 'bottom'
+                  }
+              }
+          }
+      });
+
+      // Chart period controls
+      document.querySelectorAll('[data-period]').forEach(button => {
+          button.addEventListener('click', function() {
+              document.querySelectorAll('[data-period]').forEach(btn => btn.classList.remove('active'));
+              this.classList.add('active');
+
+              // Update chart data based on period
+              const period = this.dataset.period;
+              // Add logic to update chart data here
+          });
+      });
+  });
+</script>
+{% endblock %}

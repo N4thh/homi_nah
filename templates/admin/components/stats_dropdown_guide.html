@@ -1,0 +1,27 @@
+{# Statistics Dropdown Component - Usage Guide This component is extracted from
+the statistics page dropdowns and made reusable for any page that needs the same
+dropdown styling and functionality. #} {# Import the component #} {% from
+'admin/components/stats_dropdown.html' import stats_dropdown %}
+
+<!-- ===== USAGE EXAMPLES ===== -->
+
+{# Example 1: Simple period selector (like statistics charts) #} {{
+stats_dropdown('periodSelect', [ {'value': 'week', 'text': 'Tuần này (7 ngày)',
+'icon': 'calendar-week', 'selected': true}, {'value': 'month', 'text': 'Tháng
+này (30 ngày)', 'icon': 'calendar-alt'}, {'value': 'year', 'text': 'Năm này (365
+ngày)', 'icon': 'calendar'} ]) }} {# Example 2: Year selector (like revenue
+chart) #} {{ stats_dropdown('yearSelect', [ {'value': '2023', 'text': '2023',
+'icon': 'calendar'}, {'value': '2024', 'text': '2024', 'icon': 'calendar'},
+{'value': '2025', 'text': '2025', 'icon': 'calendar', 'selected': true} ]) }} {#
+Example 3: Filter dropdown with selected value #} {{
+stats_dropdown('filterSelect', [ {'value': 'all', 'text': 'Tất cả', 'icon':
+'filter'}, {'value': 'owner', 'text': 'Owner', 'icon': 'home'}, {'value':
+'renter', 'text': 'Renter', 'icon': 'user'} ], 'owner') }} {# Example 4: Sort
+dropdown with custom class #} {{ stats_dropdown('sortSelect', [ {'value': '',
+'text': 'Sắp xếp', 'icon': 'sort'}, {'value': 'id_asc', 'text': 'ID tăng dần',
+'icon': 'arrow-up'}, {'value': 'id_desc', 'text': 'ID giảm dần', 'icon':
+'arrow-down'} ], request.args.get('sort', ''), 'my-custom-class') }} {# Example
+5: Status selector #} {{ stats_dropdown('statusSelect', [ {'value': 'all',
+'text': 'Tất cả trạng thái', 'icon': 'list'}, {'value': 'active', 'text': 'Đang
+hoạt động', 'icon': 'check-circle'}, {'value': 'inactive', 'text': 'Không hoạt
+động', 'icon': 'times-circle'} ], 'active') }}

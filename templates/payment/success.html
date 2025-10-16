@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Thanh toán thành công{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body text-center">
+                    <!-- Success icon -->
+                    <div class="success-icon mb-4">
+                        <div class="success-circle">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+
+                    <!-- Success message -->
+                    <h3 class="text-success mb-3">Thanh toán thành công!</h3>
+                    <p class="text-muted mb-4">
+                        Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi. 
+                        Giao dịch của bạn đã được xử lý thành công.
+                    </p>
+
+                    <!-- Payment details -->
+                    <div class="payment-details mb-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <span class="label">Mã giao dịch:</span>
+                                    <span class="value">{{ payment.payment_code }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Số tiền:</span>
+                                    <span class="value text-success">{{ "{:,.0f}".format(payment.amount) }} VND</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <span class="label">Thời gian:</span>
+                                    <span class="value">{{ payment.paid_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Phương thức:</span>
+                                    <span class="value">{{ payment.payment_method or 'PayOS' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Booking info -->
+                    <div class="booking-info mb-4">
+                        <h5>Thông tin đặt phòng</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                                <p><strong>Nhà:</strong> {{ booking.home.title }}</p>
+                <p><strong>Địa chỉ:</strong> {{ booking.home.address }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Ngày đặt:</strong> {{ booking.start_time.strftime('%d/%m/%Y') }}</p>
+                                <p><strong>Thời gian:</strong> {{ booking.start_time.strftime('%H:%M') }} - {{ booking.end_time.strftime('%H:%M') }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="action-buttons">
+                        <a href="{{ url_for('renter_bookings.booking_details', booking_id=booking.id) }}" 
+                           class="btn btn-primary me-2">
+                            <i class="fas fa-eye me-2"></i>
+                            Xem chi tiết booking
+                        </a>
+                        <a href="{{ url_for('renter_dashboard.dashboard') }}" 
+                           class="btn btn-outline-primary me-2">
+                            <i class="fas fa-home me-2"></i>
+                            Về trang chủ
+                        </a>
+                        <button onclick="window.print()" class="btn btn-outline-secondary">
+                            <i class="fas fa-print me-2"></i>
+                            In hóa đơn
+                        </button>
+                    </div>
+
+                    <!-- Additional info -->
+                    <div class="mt-4">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Lưu ý:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Email xác nhận đã được gửi đến {{ current_user.email }}</li>
+                                <li>Bạn có thể xem chi tiết booking trong tài khoản</li>
+                                <li>Liên hệ chủ phòng nếu cần hỗ trợ thêm</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.success-icon {
+    margin: 20px 0;
+}
+
+.success-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: #28a745;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.success-circle i {
+    color: white;
+    font-size: 2rem;
+}
+
+.detail-item {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.detail-item .label {
+    display: block;
+    font-weight: bold;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.detail-item .value {
+    display: block;
+    font-size: 1.1rem;
+    margin-top: 5px;
+}
+
+.payment-details, .booking-info {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+@media print {
+    .action-buttons {
+        display: none;
+    }
+}
+</style>
+{% endblock %} 

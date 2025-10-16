@@ -1,0 +1,1224 @@
+{% extends 'admin/layouts/admin_base.html' %} {% block title %}Admin Dashboard{%
+endblock %} {% block extra_css %}
+<!-- Font Awesome -->
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+/>
+<!-- Bootstrap CSS -->
+<link
+  href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+  rel="stylesheet"
+/>
+<!-- D3.js -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- Admin API Service will be loaded later with correct order -->
+<style>
+  /* Bootstrap Dashboard Section Management */
+  .dashboard-section {
+    padding: 1.5rem;
+  }
+
+  /* Bootstrap Card-based Statistics */
+  .stats-overview .stat-card,
+  .owner-stats-overview .stat-card {
+    /* Sử dụng Bootstrap card classes với custom styling minimal */
+    min-height: 100px;
+    transition: all 0.2s ease;
+  }
+
+  .stats-overview .stat-card:hover,
+  .owner-stats-overview .stat-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    border-color: #9ed649 !important;
+  }
+
+  .stats-overview .stat-card h6,
+  .owner-stats-overview .stat-card h6 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+  }
+
+  .stats-overview .stat-card h4,
+  .owner-stats-overview .stat-card h4 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.25rem;
+    line-height: 1.1;
+  }
+
+  .stats-overview .stat-card small,
+  .owner-stats-overview .stat-card small {
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: block;
+    margin-top: 0.25rem;
+    line-height: 1.2;
+  }
+
+  /* Bootstrap Pill Navigation - sử dụng d-flex gap-3 align-items-center trong HTML */
+
+  .filter-pill {
+    /* Sử dụng Bootstrap btn btn-outline-secondary classes với custom colors */
+    background: white;
+    border-color: #e0e0e0;
+    color: #666;
+    transition: all 0.2s ease;
+  }
+
+  .filter-pill:hover {
+    background: #f5f5f5;
+    border-color: #ccc;
+    color: #333;
+  }
+
+  .filter-pill.active {
+    background: #9ed649 !important;
+    border-color: #9ed649 !important;
+    color: white !important;
+  }
+
+  .filter-pill .count {
+    margin-left: 8px;
+    padding: 2px 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+  }
+
+  /* Bootstrap Search Box - sử dụng d-flex gap-2 align-items-center trong HTML */
+
+  .search-box .form-control {
+    width: 200px;
+    height: 36px;
+    font-size: 0.875rem;
+    border-color: #e2e8f0;
+    background: #f8fafc;
+  }
+
+  .search-box .btn {
+    height: 36px;
+    background: #8ab82f;
+    border-color: #8ab82f;
+  }
+
+  .search-box .btn:hover {
+    background: #9ed649;
+    border-color: #9ed649;
+    transform: translateY(-1px);
+  }
+
+  /* Table Styles */
+  .table-responsive {
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: auto;
+  }
+
+  .table-responsive::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+
+  .table-responsive::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 0.5rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 1rem;
+  }
+
+  .data-table th {
+    font-weight: 600;
+    color: #64748b;
+    background: #f8f9fa;
+  }
+
+  .data-table td {
+    color: #2c3e50;
+    font-weight: 500;
+    background: white;
+  }
+
+  .data-table tr:hover td {
+    background: #f8f9fa;
+  }
+
+  /* Status Badge */
+  .status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+
+  .status-active {
+    background: rgba(158, 214, 73, 0.1);
+    color: #8ab82f;
+  }
+
+  .status-inactive {
+    background: rgba(100, 116, 139, 0.1);
+    color: #64748b;
+  }
+
+  /* Bootstrap Action Button */
+  .action-button {
+    /* Sử dụng Bootstrap btn btn-outline-secondary btn-sm */
+    width: 28px;
+    height: 28px;
+    background: #f8f9fa;
+    border-color: #e2e8f0;
+    color: #64748b;
+    transition: all 0.2s ease;
+  }
+
+  .action-button:hover {
+    background: #e2e8f0;
+    border-color: #e2e8f0;
+    color: #2c3e50;
+    transform: translateY(-1px);
+  }
+
+  /* Dropdown Styles */
+  .dropdown-menu {
+    min-width: 140px !important;
+    padding: 0.25rem !important;
+    z-index: 2000 !important;
+    position: absolute !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+  }
+
+  /* Chart Navigation Dropdown Specific Styles */
+  .chart-navbar .dropdown {
+    position: relative !important;
+    z-index: 1050 !important;
+  }
+
+  .chart-navbar .dropdown-menu {
+    position: absolute !important;
+    top: 100% !important;
+    right: 0 !important;
+    left: auto !important;
+    z-index: 2100 !important;
+    min-width: 200px !important;
+    margin-top: 2px !important;
+    background: white !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    padding: 0.5rem 0 !important;
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .chart-navbar .dropdown-menu.show {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .chart-navbar .dropdown-toggle {
+    background: white !important;
+    border: 1px solid #dee2e6 !important;
+    color: #495057 !important;
+    z-index: 1051 !important;
+    position: relative !important;
+  }
+
+  .chart-navbar .dropdown-toggle:hover,
+  .chart-navbar .dropdown-toggle:focus {
+    background: #f8f9fa !important;
+    border-color: #9ed649 !important;
+    color: #9ed649 !important;
+    box-shadow: 0 0 0 0.2rem rgba(158, 214, 73, 0.25) !important;
+  }
+
+  /* Choices.js Custom Styles */
+  .chart-dropdown-choices {
+    min-width: 180px !important;
+    border-radius: 8px !important;
+  }
+
+  .chart-dropdown-choices .choices__inner {
+    background: white !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 8px !important;
+    padding: 0.375rem 0.75rem !important;
+    font-size: 0.875rem !important;
+    min-height: 32px !important;
+  }
+
+  .chart-dropdown-choices.is-focused .choices__inner {
+    border-color: #9ed649 !important;
+    box-shadow: 0 0 0 0.2rem rgba(158, 214, 73, 0.25) !important;
+  }
+
+  .chart-dropdown-choices .choices__item--selectable {
+    color: #495057 !important;
+    font-weight: 500 !important;
+  }
+
+  .chart-dropdown-list {
+    background: white !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+    margin-top: 4px !important;
+    z-index: 2100 !important;
+  }
+
+  .chart-dropdown-item {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.875rem !important;
+    color: #495057 !important;
+    transition: all 0.2s ease !important;
+  }
+
+  .chart-dropdown-item:hover,
+  .chart-dropdown-item.is-highlighted {
+    background: #f8f9fa !important;
+    color: #9ed649 !important;
+  }
+
+  .chart-dropdown-item i {
+    color: #9ed649 !important;
+    width: 16px !important;
+  }
+
+  .chart-navbar select.form-select {
+    /* Show original select as fallback if Choices.js fails */
+    min-width: 180px !important;
+    border-radius: 8px !important;
+    font-size: 0.875rem !important;
+    padding: 0.375rem 0.75rem !important;
+    border: 1px solid #dee2e6 !important;
+    background: white !important;
+  }
+
+  .chart-navbar select.form-select:focus {
+    border-color: #9ed649 !important;
+    box-shadow: 0 0 0 0.2rem rgba(158, 214, 73, 0.25) !important;
+  }
+
+  /* Hide original select only when Choices.js is active */
+  .chart-navbar .choices + select.form-select {
+    display: none !important;
+  }
+
+  .dropdown-item {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.875rem !important;
+    color: #64748b;
+    transition: all 0.2s;
+  }
+
+  .dropdown-item:hover {
+    background: #f8fafc;
+    color: #2c3e50;
+  }
+
+  .dropdown-item.text-danger:hover {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+
+  /* Modal Styles */
+  .modal {
+    z-index: 1051 !important;
+  }
+
+  .modal-backdrop {
+    z-index: 1050 !important;
+    background-color: rgba(108, 117, 125, 0.8) !important;
+    backdrop-filter: blur(5px) !important;
+  }
+
+  .modal-content {
+    border: none !important;
+    border-radius: 12px !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .modal-title {
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    color: #2c3e50 !important;
+  }
+
+  /* Form Styles */
+  .form-control {
+    height: 38px !important;
+    padding: 0.375rem 0.75rem !important;
+    font-size: 0.875rem !important;
+    border-radius: 8px !important;
+    border: 1px solid #e2e8f0 !important;
+    background-color: #f8fafc !important;
+  }
+
+  .form-control:focus {
+    border-color: #9ed649;
+    box-shadow: 0 0 0 0.2rem rgba(158, 214, 73, 0.25);
+  }
+
+  /* Bootstrap Button Customization */
+  .btn {
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary {
+    background-color: #9ed649 !important;
+    border-color: #9ed649 !important;
+  }
+
+  .btn-primary:hover {
+    background-color: #8ab82f !important;
+    border-color: #8ab82f !important;
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    background-color: #64748b !important;
+    border-color: #64748b !important;
+  }
+
+  .btn-danger:hover {
+    background-color: #bb2d3b;
+    border-color: #bb2d3b;
+    transform: translateY(-1px);
+  }
+
+  /* Bootstrap Badge Customization */
+  .badge-inactive {
+    /* Sử dụng Bootstrap bg-secondary base */
+    background-color: #dc3545 !important;
+  }
+
+  .bg-success {
+    background-color: #9ed649 !important;
+  }
+
+  /* Toast Styles */
+  .toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1060;
+  }
+
+  .toast {
+    background-color: white;
+    border: none !important;
+    opacity: 1 !important;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .toast.showing {
+    transform: translateX(0);
+    animation: slideInRight 0.3s ease-in-out forwards;
+  }
+
+  .toast.show {
+    transform: translateX(0);
+  }
+
+  .toast.success {
+    border-left: 4px solid #9ed649 !important;
+    box-shadow: 0 4px 12px rgba(158, 214, 73, 0.15);
+  }
+
+  .toast.error {
+    border-left: 4px solid #dc3545 !important;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.15);
+  }
+
+  .toast-icon {
+    font-size: 1.25rem;
+    margin-right: 0.5rem;
+  }
+
+  .toast.success .toast-icon {
+    color: #9ed649;
+  }
+
+  .toast.error .toast-icon {
+    color: #dc3545;
+  }
+
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  /* Chart Styles */
+  .chart-container {
+    transition: all 0.3s ease;
+  }
+
+  .chart-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  /* Utility Classes */
+  .text-success {
+    color: #8ab82f !important;
+  }
+  .bg-light-success {
+    background-color: rgba(138, 184, 47, 0.1);
+  }
+  .bg-light-primary {
+    background-color: rgba(13, 110, 253, 0.1);
+  }
+  .bg-light-warning {
+    background-color: rgba(255, 193, 7, 0.1);
+  }
+  .bg-light-info {
+    background-color: rgba(13, 202, 240, 0.1);
+  }
+  .bg-light-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+  }
+
+  /* Alert Styles */
+  .alert-warning {
+    background-color: #fff8e1;
+    border-color: #ffd54f;
+    color: #856404;
+  }
+
+  .alert-info {
+    background-color: #e6f3ff;
+    border-color: #b8daff;
+    color: #0c5460;
+  }
+
+  /* Section Visibility - Ensure proper hiding */
+  .dashboard-section.d-none,
+  .admin-section.d-none {
+    display: none !important;
+  }
+
+  .dashboard-section:not(.d-block):not(.active),
+  .admin-section:not(.d-block):not(.active) {
+    display: none !important;
+  }
+
+  /* Ensure active sections are visible */
+  .admin-section.active,
+  .admin-section.d-block {
+    display: block !important;
+  }
+
+  .dashboard-section.active,
+  .dashboard-section.d-block {
+    display: block !important;
+  }
+</style>
+{% endblock %} {% block content %}
+<!-- Admin Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+  <div class="container-fluid">
+    <!-- Brand/Logo -->
+    <span
+      class="navbar-brand fw-bold d-flex align-items-center"
+      style="color: #333333"
+    >
+      <img
+        src="{{ url_for('static', filename='data/system/Logo.png') }}"
+        alt="Homi Logo"
+        height="40"
+        class="me-2"
+      />
+      <span class="brand-text" style="font-size: 24px">Homi Admin</span>
+    </span>
+
+    <!-- Navbar Items -->
+    <div class="navbar-nav ms-auto d-flex flex-row align-items-center">
+      <!-- User Info -->
+      <div class="nav-item d-flex align-items-center me-3">
+        {% if current_user.avatar %}
+        <img
+          src="{{ url_for('static', filename=current_user.avatar) }}"
+          alt="Avatar"
+          class="rounded-circle me-2"
+          style="width: 32px; height: 32px; object-fit: cover"
+        />
+        {% else %}
+        <img
+          src="{{ url_for('static', filename='data/system/default-avatar.png') }}"
+          alt="Default Avatar"
+          class="rounded-circle me-2"
+          style="width: 32px; height: 32px; object-fit: cover"
+        />
+        {% endif %}
+        <span class="text-dark fw-bold">{{ current_user.username or current_user.display_name }}</span>
+      </div>
+      
+      <!-- Logout Button -->
+      <div class="nav-item">
+        <a
+          class="btn btn-outline-danger btn-sm"
+          href="{{ url_for('auth.logout') }}"
+          style="border-radius: 20px; padding: 6px 16px;"
+        >
+          <i class="fas fa-sign-out-alt me-1"></i>
+          Đăng xuất
+        </a>
+      </div>
+
+    </div>
+  </div>
+</nav>
+
+<!-- Add top margin to content -->
+<div class="container-fluid" style="margin-top: 80px">
+  <!-- Page Header -->
+  <div
+    class="d-flex justify-content-between align-items-center p-3 border-bottom bg-white"
+  >
+    <div>
+      <h1 class="h4 fw-semibold text-dark mb-0" id="main-page-title">
+        Admin Dashboard
+      </h1>
+      <p class="text-muted small mb-0">
+        Quản lý tài khoản và thống kê hệ thống
+      </p>
+    </div>
+  </div>
+
+  <!-- Dashboard Sections -->
+  <div class="dashboard-content">
+    <!-- Statistics Section -->
+    <div id="section-stats" class="admin-section">
+      {% include 'admin/partials/statistics.html' %}
+    </div>
+
+    <!-- Customer Management Section -->
+    <div id="section-owner" class="admin-section d-none">
+      {% include 'admin/partials/customer_management.html' %}
+    </div>
+
+    {% if current_user.is_super_admin %}
+    <!-- Admin Management Section -->
+    <div id="section-admin" class="admin-section d-none">
+      {% include 'admin/partials/admin_management.html' %}
+    </div>
+    {% endif %}
+
+    <!-- Homestay Management Section -->
+    <div id="section-homestays" class="dashboard-section d-none">
+      <div class="p-4">
+        <div class="alert alert-info d-flex align-items-center">
+          <i class="fas fa-info-circle me-2"></i>
+          Tính năng quản lý homestay đang được phát triển.
+        </div>
+      </div>
+    </div>
+
+    <!-- Booking Management Section -->
+    <div id="section-bookings" class="admin-section d-none">
+      {% include 'admin/partials/booking_management.html' %}
+    </div>
+
+    <!-- Payment Management Section -->
+    <div id="section-payments" class="dashboard-section d-none">
+      <div class="p-4">
+        <div class="alert alert-info d-flex align-items-center">
+          <i class="fas fa-info-circle me-2"></i>
+          Tính năng quản lý thanh toán đang được phát triển.
+        </div>
+      </div>
+    </div>
+
+    <!-- Reports Section -->
+    <div id="section-reports" class="dashboard-section d-none">
+      <div class="p-4">
+        <div class="alert alert-info d-flex align-items-center">
+          <i class="fas fa-info-circle me-2"></i>
+          Tính năng báo cáo đang được phát triển.
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Section -->
+    <div id="section-settings" class="dashboard-section d-none">
+      <div class="p-4">
+        <div class="alert alert-info d-flex align-items-center">
+          <i class="fas fa-info-circle me-2"></i>
+          Tính năng cài đặt đang được phát triển.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Owner Modal removed - using SweetAlert2 instead -->
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+  <div
+    id="successToast"
+    class="toast success"
+    role="alert"
+    aria-live="assertive"
+    aria-atomic="true"
+  >
+    <div class="toast-header">
+      <i class="fas fa-check-circle toast-icon"></i>
+      <strong class="me-auto">Thành công</strong>
+      <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="toast"
+        aria-label="Close"
+      ></button>
+    </div>
+    <div class="toast-body">Tạo tài khoản owner mới thành công!</div>
+  </div>
+  <div
+    id="errorToast"
+    class="toast error"
+    role="alert"
+    aria-live="assertive"
+    aria-atomic="true"
+  >
+    <div class="toast-header">
+      <i class="fas fa-exclamation-circle toast-icon"></i>
+      <strong class="me-auto">Lỗi</strong>
+      <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="toast"
+        aria-label="Close"
+      ></button>
+    </div>
+    <div class="toast-body">Đã xảy ra lỗi!</div>
+  </div>
+</div>
+
+<!-- Modal Xác nhận xóa -->
+<div
+  class="modal fade"
+  id="deleteConfirmModal"
+  tabindex="-1"
+  aria-labelledby="deleteConfirmModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 rounded-3">
+      <div class="modal-header border-0">
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body p-4">
+        <h5 class="modal-title fw-bold mb-4">Xóa tài khoản</h5>
+        <div class="user-info mb-3 p-3 bg-light rounded">
+          <div class="row mb-2">
+            <div class="col-4 text-muted">Tên</div>
+            <div class="col-8 fw-medium" id="delete-username-display"></div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-4 text-muted">Email</div>
+            <div class="col-8" id="delete-email-display"></div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-4 text-muted">Số điện thoại</div>
+            <div class="col-8" id="delete-phone-display"></div>
+          </div>
+        </div>
+        <div class="alert alert-warning mb-4">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          Lưu ý: Hành động này không thể hoàn tác. Tất cả dữ liệu liên quan đến
+          tài khoản này sẽ bị xóa vĩnh viễn.
+        </div>
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button
+            type="button"
+            class="btn btn-outline-secondary px-4"
+            data-bs-dismiss="modal"
+          >
+            Hủy
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger px-4"
+            id="confirmDeleteBtn"
+          >
+            Xóa tài khoản
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Vô hiệu hóa/Kích hoạt tài khoản -->
+<div
+  class="modal fade"
+  id="toggleStatusModal"
+  tabindex="-1"
+  aria-labelledby="toggleStatusModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 rounded-3">
+      <div class="modal-header border-0">
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body p-4">
+        <div id="deactivateContent">
+          <h5 class="modal-title fw-bold mb-4">Vô hiệu hóa tài khoản</h5>
+          <div class="user-info mb-3 p-3 bg-light rounded">
+            <div class="row mb-2">
+              <div class="col-4 text-muted">Tên</div>
+              <div class="col-8 fw-medium" id="toggle-username-display"></div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-4 text-muted">Email</div>
+              <div class="col-8" id="toggle-email-display"></div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-4 text-muted">Số điện thoại</div>
+              <div class="col-8" id="toggle-phone-display"></div>
+            </div>
+          </div>
+          <div class="form-group mb-3">
+            <label for="reasonTextarea" class="form-label"
+              >Lý do vô hiệu hóa tài khoản:</label
+            >
+            <textarea
+              class="form-control"
+              id="reasonTextarea"
+              name="reason"
+              rows="3"
+              placeholder="Ví dụ: Vi phạm điều khoản sử dụng..."
+              required
+              maxlength="200"
+            ></textarea>
+            <div class="d-flex justify-content-end mt-1">
+              <small class="text-muted character-count">0/200 ký tự</small>
+            </div>
+          </div>
+        </div>
+        <div id="activateContent" style="display: none">
+          <h5 class="modal-title fw-bold mb-4">Kích hoạt tài khoản</h5>
+          <div class="user-info mb-3 p-3 bg-light rounded">
+            <div class="row mb-2">
+              <div class="col-4 text-muted">Tên</div>
+              <div
+                class="col-8 fw-medium"
+                id="toggle-username-display-active"
+              ></div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-4 text-muted">Email</div>
+              <div class="col-8" id="toggle-email-display-active"></div>
+            </div>
+            <div class="row mb-2">
+              <div class="col-4 text-muted">Số điện thoại</div>
+              <div class="col-8" id="toggle-phone-display-active"></div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label"
+              >Lý do tài khoản bị vô hiệu hóa trước đó:</label
+            >
+            <div class="alert alert-info" id="previousReason"></div>
+          </div>
+        </div>
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <button
+            type="button"
+            class="btn btn-outline-secondary px-4"
+            data-bs-dismiss="modal"
+          >
+            Hủy
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary px-4"
+            id="confirmToggleBtn"
+          >
+            Xác nhận
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Thêm Admin -->
+{% if current_user.is_super_admin %}
+<div
+  class="modal fade"
+  id="addAdminModal"
+  tabindex="-1"
+  aria-labelledby="addAdminModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addAdminModalLabel">Thêm Admin mới</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form id="addAdminForm">
+          <div class="mb-3">
+            <label for="adminUsername" class="form-label">Tên đăng nhập</label>
+            <input
+              type="text"
+              class="form-control"
+              id="adminUsername"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="adminEmail" class="form-label">Email</label>
+            <input type="email" class="form-control" id="adminEmail" required />
+          </div>
+          <div class="mb-3">
+            <label for="adminPassword" class="form-label">Mật khẩu</label>
+            <input
+              type="password"
+              class="form-control"
+              id="adminPassword"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="adminConfirmPassword" class="form-label"
+              >Xác nhận mật khẩu</label
+            >
+            <input
+              type="password"
+              class="form-control"
+              id="adminConfirmPassword"
+              required
+            />
+            <div class="invalid-feedback">Mật khẩu xác nhận không khớp</div>
+          </div>
+          <div class="mb-3">
+            <label for="adminRole" class="form-label">Quyền hạn</label>
+            <select class="form-select" id="adminRole" required>
+              <option value="">Chọn quyền hạn</option>
+              <option value="admin">Admin</option>
+              <option value="super_admin">Super Admin</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Hủy
+        </button>
+        <button type="button" class="btn btn-primary" id="submitAddAdmin">
+          Thêm Admin
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %} {% endblock %} {% block extra_js %}
+<!-- Bootstrap Dependencies -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<!-- Choices.js for beautiful dropdowns -->
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/choices.js@10.2.0/public/assets/styles/choices.min.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/choices.js@10.2.0/public/assets/scripts/choices.min.js"></script>
+
+<!-- CSRF Token -->
+<meta name="csrf-token" content="{{ csrf_token() }}" />
+
+<!-- Admin Dashboard JavaScript Modules -->
+<script src="{{ url_for('static', filename='js/admin/admin-dashboard-core.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin/admin-dashboard-forms.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin/admin-dashboard-tables.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin/admin-dashboard-charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin/admin-dashboard-dropdowns.js') }}"></script>
+
+<!-- Commission Update Handlers (jQuery dependent) -->
+<script>
+  // Commission update handlers
+  $(document).on("click", ".btn-save-commission", function () {
+    var roomId = $(this).data("room-id");
+    var input = $('.commission-input[data-room-id="' + roomId + '"]');
+    var percent = input.val();
+    var btn = $(this);
+    btn.prop("disabled", true);
+
+    $.ajax({
+      url: "/admin/api/room/" + roomId + "/commission",
+      method: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({ commission_percent: percent }),
+      success: function (res) {
+        if (res.success) {
+          input.val(res.commission_percent);
+          if (window.showToast) {
+            window.showToast(
+              "success",
+              res.message || "Cập nhật hoa hồng thành công!"
+            );
+          }
+        } else {
+          if (window.showToast) {
+            window.showToast("error", res.error || "Có lỗi xảy ra!");
+          }
+        }
+      },
+      error: function (xhr) {
+        if (window.showToast) {
+          window.showToast("error", "Có lỗi xảy ra khi kết nối server!");
+        }
+      },
+      complete: function () {
+        btn.prop("disabled", false);
+      },
+    });
+  });
+
+  $(document).on("click", ".btn-save-commission-owner", function () {
+    var ownerId = $(this).data("owner-id");
+    var input = $('.commission-owner-input[data-owner-id="' + ownerId + '"]');
+    var percent = input.val();
+    var btn = $(this);
+    btn.prop("disabled", true);
+
+    $.ajax({
+      url: "/admin/api/owner/" + ownerId + "/commission",
+      method: "POST",
+      contentType: "application/json",
+      data: JSON.stringify({ commission_percent: percent }),
+      success: function (res) {
+        if (res.success) {
+          input.val(res.commission_percent);
+          if (window.showToast) {
+            window.showToast(
+              "success",
+              res.message || "Cập nhật hoa hồng thành công!"
+            );
+          }
+        } else {
+          if (window.showToast) {
+            window.showToast("error", res.error || "Có lỗi xảy ra!");
+          }
+        }
+      },
+      error: function (xhr) {
+        if (window.showToast) {
+          window.showToast("error", "Có lỗi xảy ra khi kết nối server!");
+        }
+      },
+      complete: function () {
+        btn.prop("disabled", false);
+      },
+    });
+  });
+
+  // Debug Choices.js initialization
+  document.addEventListener("DOMContentLoaded", function () {
+    setTimeout(() => {
+      // Check if Choices.js is loaded
+      if (typeof Choices === "undefined") {
+        console.error("❌ Choices.js library not loaded!");
+        return;
+      }
+
+      // Check if elements exist
+      const bookingSelect = document.getElementById("bookingChartPeriodSelect");
+      const userSelect = document.getElementById("userChartPeriodSelect");
+      const revenueSelect = document.getElementById("revenueYearSelect");
+
+      if (!bookingSelect || !userSelect || !revenueSelect) {
+        console.error("❌ Some select elements not found!");
+
+        // Force initialize dropdowns manually
+        setTimeout(() => {
+          if (window.initializeChartDropdowns) {
+            window.initializeChartDropdowns();
+          } else {
+            console.error("❌ initializeChartDropdowns function not available");
+          }
+        }, 2000);
+      }
+
+      // Check stats section
+      const statsSection = document.getElementById("section-stats");
+
+      if (statsSection) {
+        const isVisible =
+          statsSection.classList.contains("active") ||
+          (statsSection.style.display !== "none" &&
+            getComputedStyle(statsSection).display !== "none");
+      }
+
+      // Add fallback native select event listeners
+      const addFallbackListeners = () => {
+        const bookingSelect = document.getElementById(
+          "bookingChartPeriodSelect"
+        );
+        const userSelect = document.getElementById("userChartPeriodSelect");
+        const revenueSelect = document.getElementById("revenueYearSelect");
+
+        if (bookingSelect) {
+          bookingSelect.addEventListener("change", function () {
+            if (window.updateBookingChart) {
+              window.updateBookingChart(this.value);
+            }
+          });
+        }
+
+        if (userSelect) {
+          userSelect.addEventListener("change", function () {
+            if (window.updateLineChart) {
+              window.updateLineChart(this.value);
+            }
+          });
+        }
+
+        if (revenueSelect) {
+          revenueSelect.addEventListener("change", function () {
+            if (window.updateRevenueChart) {
+              window.updateRevenueChart(this.value);
+            }
+          });
+        }
+      };
+
+      // Add fallback listeners
+      addFallbackListeners();
+
+      // Test data generation consistency
+      setTimeout(() => {
+        // Test user chart data
+        const weekData1 = generateMockChartData("week");
+        const weekData2 = generateMockChartData("week");
+        const monthData = generateMockChartData("month");
+        const yearData = generateMockChartData("year");
+
+        // Test booking chart data
+        const bookingWeek = generateMockBookingChartData("week");
+        const bookingMonth = generateMockBookingChartData("month");
+
+        // Test revenue data
+        const revenue2024 = generateMockRevenueChartData("2024");
+        const revenue2025 = generateMockRevenueChartData("2025");
+
+        // Check if data is different
+        const sameWeekData =
+          JSON.stringify(weekData1) === JSON.stringify(weekData2);
+      }, 3000);
+    }, 1500);
+  });
+
+  // Initialize dashboard on page load
+  setTimeout(() => {
+    // Check current hash or default to stats
+    const currentHash = window.location.hash.substring(1);
+    const defaultSection = currentHash || "stats";
+
+    // Show the appropriate section
+    if (typeof window.showSection === "function") {
+      window.showSection(defaultSection);
+    } else {
+      // Fallback: show stats section manually
+      document
+        .querySelectorAll(".admin-section, .dashboard-section")
+        .forEach((section) => {
+          section.classList.add("d-none");
+          section.classList.remove("d-block");
+          section.classList.remove("active");
+          section.style.display = "none"; // Force hide with inline style
+        });
+
+      const targetSection = document.getElementById(
+        `section-${defaultSection}`
+      );
+      if (targetSection) {
+        targetSection.classList.remove("d-none");
+        targetSection.classList.add("d-block");
+        targetSection.classList.add("active");
+        targetSection.style.display = "block"; // Force show with inline style
+      }
+    }
+
+    // Set active menu item
+    if (window.setActiveMenuItem) {
+      window.setActiveMenuItem(defaultSection);
+    }
+
+    // Set URL hash if not present
+    if (!window.location.hash) {
+      if (history.pushState) {
+        history.pushState(null, null, "#stats");
+      }
+    }
+  }, 500);
+</script>
+
+<!-- API Services -->
+<script src="{{ url_for('static', filename='js/services/base-api-service.js') }}"></script>
+<script src="{{ url_for('static', filename='js/services/admin-api-service.js') }}"></script>
+
+<!-- Simple Test Button removed -->
+
+</div> <!-- Close container-fluid -->
+
+{% endblock %}

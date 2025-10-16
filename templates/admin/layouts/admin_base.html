@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html id="htmlRoot" lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>{% block title %}Admin Dashboard - Homi{% endblock %}</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Bootstrap Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      rel="stylesheet"
+    />
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- CSRF Token Meta Tag -->
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
+
+    <style>
+      /* Base Admin Styles */
+      body {
+        background: #f8fdf4;
+        overflow-x: hidden;
+        font-family: "Poppins", sans-serif;
+      }
+
+      /* Prevent zooming on all devices */
+      html {
+        touch-action: manipulation;
+        -ms-touch-action: manipulation;
+        -webkit-text-size-adjust: none;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        overscroll-behavior: none;
+      }
+
+      * {
+        max-height: 1000000px;
+        -webkit-user-drag: none;
+      }
+
+      /* Admin Layout Structure */
+      .admin-layout {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      .admin-sidebar {
+        width: 250px;
+        background: white;
+        height: calc(100vh - 80px);
+        position: fixed;
+        left: 1rem;
+        top: 80px;
+        z-index: 1051;
+        border-right: 1px solid #e0e0e0;
+      }
+
+      .admin-sidebar::after {
+        content: "";
+        position: absolute;
+        right: 0;
+        top: 160px;
+        bottom: 0;
+        width: 2px;
+        background: #e0e0e0;
+        z-index: 1;
+      }
+
+      .admin-main {
+        margin-left: calc(250px + 2rem);
+        margin-top: 80px;
+        min-height: calc(100vh - 80px);
+        overflow-y: auto;
+        flex: 1;
+        padding: 1.5rem;
+      }
+
+      /* Navbar Styles */
+      .navbar {
+        z-index: 1060 !important;
+        position: fixed !important;
+        top: 0 !important;
+        width: 100% !important;
+      }
+
+      .navbar .navbar-brand,
+      .navbar .navbar-nav .nav-link,
+      .navbar .navbar-text,
+      .navbar .brand-text,
+      .navbar .dropdown-toggle {
+        color: #333333 !important;
+      }
+
+      .navbar .navbar-brand:hover,
+      .navbar .navbar-nav .nav-link:hover {
+        color: #000000 !important;
+      }
+
+      .navbar .dropdown-menu {
+        z-index: 1070 !important;
+        position: absolute !important;
+        will-change: transform !important;
+      }
+
+      .navbar-nav .dropdown-menu {
+        position: absolute !important;
+        top: 100% !important;
+        right: 0 !important;
+        z-index: 1070 !important;
+      }
+
+      /* Sidebar Menu Styles */
+      .sidebar-menu-link {
+        color: #333333 !important;
+        text-decoration: none !important;
+        border-radius: 8px !important;
+        transition: color 0.3s ease !important;
+        font-weight: 500 !important;
+        background: transparent !important;
+        border: none !important;
+      }
+
+      .sidebar-menu-link:hover {
+        color: #9ed649 !important;
+        text-decoration: none !important;
+      }
+
+      .sidebar-menu-link.active {
+        color: #9ed649 !important;
+        font-weight: 600 !important;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .admin-sidebar {
+          transform: translateX(-100%);
+          transition: transform 0.3s ease;
+        }
+
+        .admin-sidebar.show {
+          transform: translateX(0);
+        }
+
+        .admin-main {
+          margin-left: 0;
+          margin-top: 80px;
+          padding: 0.5rem;
+        }
+      }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+    <div class="admin-layout">
+      <!-- Admin Navbar -->
+      {% include 'admin/layouts/admin_navbar.html' %}
+
+      <!-- Admin Sidebar -->
+      {% include 'admin/layouts/admin_sidebar.html' %}
+
+      <!-- Main Content -->
+      <main class="admin-main">
+        <div class="container-fluid p-0">{% block content %}{% endblock %}</div>
+      </main>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JS -->
+    <script>
+      // CSRF Token for AJAX requests
+      window.csrfToken = document
+        .querySelector('meta[name="csrf-token"]')
+        .getAttribute("content");
+
+      // Mobile sidebar toggle
+      function toggleSidebar() {
+        const sidebar = document.querySelector(".admin-sidebar");
+        sidebar.classList.toggle("show");
+      }
+
+      // Close sidebar when clicking outside on mobile
+      document.addEventListener("click", function (event) {
+        const sidebar = document.querySelector(".admin-sidebar");
+        const toggleBtn = document.querySelector('[onclick="toggleSidebar()"]');
+
+        if (
+          window.innerWidth <= 768 &&
+          !sidebar.contains(event.target) &&
+          !toggleBtn.contains(event.target) &&
+          sidebar.classList.contains("show")
+        ) {
+          sidebar.classList.remove("show");
+        }
+      });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

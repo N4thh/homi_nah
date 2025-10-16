@@ -1,0 +1,54 @@
+{% extends 'layouts/base.html' %} {% block title %}Admin Dashboard - Homi{%
+endblock %} {% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/admin.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/components.css') }}"
+/>
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/layout.css') }}"
+/>
+{% endblock %} {% block content %}
+<div class="admin-layout">
+  {% include 'components/admin_sidebar.html' %}
+
+  <div class="admin-main">
+    {% include 'components/admin_header.html' %}
+
+    <div class="admin-content">{% block admin_content %}{% endblock %}</div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  // Admin layout JavaScript
+  document.addEventListener("DOMContentLoaded", function () {
+    // Mobile sidebar toggle
+    const sidebarToggle = document.querySelector(".sidebar-toggle");
+    const sidebar = document.querySelector(".admin-sidebar");
+
+    if (sidebarToggle && sidebar) {
+      sidebarToggle.addEventListener("click", function () {
+        sidebar.classList.toggle("show");
+      });
+    }
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener("click", function (e) {
+      if (window.innerWidth <= 768) {
+        if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+          sidebar.classList.remove("show");
+        }
+      }
+    });
+
+    // Auto-refresh notifications
+    setInterval(function () {
+      // Add notification refresh logic here
+    }, 30000); // 30 seconds
+  });
+</script>
+{% endblock %}

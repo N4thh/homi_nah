@@ -1,0 +1,109 @@
+<!-- Home Card Component -->
+<div class="col-md-4 col-lg-3 mb-4">
+  <div class="card home-card h-100">
+    <!-- Home Image -->
+    <div class="home-image-container">
+      {% if home.images %}
+      <img
+        src="{{ home.images[0].image_url }}"
+        class="card-img-top"
+        alt="{{ home.title }}"
+        loading="lazy"
+      />
+      {% else %}
+      <div
+        class="card-img-top bg-light d-flex align-items-center justify-content-center"
+      >
+        <i class="fas fa-home fa-3x text-muted"></i>
+      </div>
+      {% endif %}
+
+      <!-- Price Badge -->
+      <div class="price-badge">
+        <span class="badge bg-success fs-6">
+          {{ "{:,.0f}".format(home.price) }} VNĐ/đêm
+        </span>
+      </div>
+
+      <!-- Favorite Button -->
+      <button
+        class="btn btn-light btn-sm favorite-btn"
+        data-home-id="{{ home.id }}"
+      >
+        <i class="far fa-heart"></i>
+      </button>
+    </div>
+
+    <!-- Card Body -->
+    <div class="card-body d-flex flex-column">
+      <!-- Home Title -->
+      <h5 class="card-title mb-2">{{ home.title }}</h5>
+
+      <!-- Location -->
+      <p class="card-text text-muted mb-2">
+        <i class="fas fa-map-marker-alt me-1"></i>
+        {{ home.district }}, {{ home.city }}
+      </p>
+
+      <!-- Home Details -->
+      <div class="home-details mb-3">
+        <div class="row g-2">
+          <div class="col-6">
+            <small class="text-muted">
+              <i class="fas fa-bed me-1"></i>
+              {{ home.bedrooms }} phòng ngủ
+            </small>
+          </div>
+          <div class="col-6">
+            <small class="text-muted">
+              <i class="fas fa-bath me-1"></i>
+              {{ home.bathrooms }} phòng tắm
+            </small>
+          </div>
+          <div class="col-6">
+            <small class="text-muted">
+              <i class="fas fa-users me-1"></i>
+              {{ home.max_guests }} khách
+            </small>
+          </div>
+          <div class="col-6">
+            <small class="text-muted">
+              <i class="fas fa-home me-1"></i>
+              {{ home.home_type }}
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rating -->
+      {% if home.average_rating %}
+      <div class="rating mb-3">
+        <div class="d-flex align-items-center">
+          <div class="stars me-2">
+            {% for i in range(5) %}
+            <i
+              class="fas fa-star {{ 'text-warning' if i < home.average_rating else 'text-muted' }}"
+            ></i>
+            {% endfor %}
+          </div>
+          <span class="text-muted small"
+            >{{ home.average_rating|round(1) }} ({{ home.review_count }} đánh
+            giá)</span
+          >
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Action Button -->
+      <div class="mt-auto">
+        <a
+          href="{{ url_for('renter_homes.view_home_detail', home_id=home.id) }}"
+          class="btn btn-primary w-100"
+        >
+          <i class="fas fa-eye me-2"></i>
+          Xem chi tiết
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,349 @@
+/* Home Page Specific Styles */
+
+/* Hero Section */
+.hero-section {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    overflow: hidden;
+}
+
+.hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M 50 0 L 0 0 0 50" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+    background-size: 50px 50px;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    margin-bottom: 3rem;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 1.5rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    line-height: 1.2;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.hero-search {
+    position: relative;
+    z-index: 2;
+}
+
+/* Features Section */
+.features-section {
+    background: white;
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.section-subtitle {
+    font-size: 1.125rem;
+    color: #6c757d;
+    margin-bottom: 0;
+}
+
+.feature-card {
+    padding: 2rem 1.5rem;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #9ed649 0%, #8bc53a 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    font-size: 2rem;
+    color: white;
+    box-shadow: 0 4px 12px rgba(158, 214, 73, 0.3);
+}
+
+.feature-card h4 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.feature-card p {
+    color: #6c757d;
+    line-height: 1.6;
+    margin-bottom: 0;
+}
+
+/* Destinations Section */
+.destinations-section {
+    background: #f8f9fa;
+}
+
+.destination-card {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    height: 250px;
+}
+
+.destination-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.destination-image {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.destination-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.destination-card:hover .destination-image img {
+    transform: scale(1.1);
+}
+
+.destination-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    color: white;
+    padding: 2rem 1.5rem 1.5rem;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+}
+
+.destination-card:hover .destination-overlay {
+    transform: translateY(0);
+}
+
+.destination-overlay h4 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.destination-overlay p {
+    margin-bottom: 0;
+    opacity: 0.9;
+}
+
+/* Statistics Section */
+.stats-section {
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.stats-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23dots)"/></svg>');
+    background-size: 20px 20px;
+}
+
+.stat-item {
+    position: relative;
+    z-index: 2;
+    padding: 2rem 1rem;
+}
+
+.stat-number {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #9ed649;
+    margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.stat-label {
+    font-size: 1.125rem;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+/* Featured Homes Section */
+.featured-homes-section {
+    background: white;
+}
+
+.no-homes-placeholder {
+    padding: 3rem 1rem;
+}
+
+/* CTA Section */
+.cta-section {
+    background: white;
+}
+
+.cta-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 1rem;
+}
+
+.cta-subtitle {
+    font-size: 1.25rem;
+    color: #6c757d;
+    margin-bottom: 2rem;
+}
+
+.cta-buttons .btn {
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.cta-buttons .btn-primary {
+    background: linear-gradient(135deg, #9ed649 0%, #8bc53a 100%);
+    border: none;
+    box-shadow: 0 4px 12px rgba(158, 214, 73, 0.3);
+}
+
+.cta-buttons .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(158, 214, 73, 0.4);
+}
+
+.cta-buttons .btn-outline-primary {
+    border: 2px solid #9ed649;
+    color: #9ed649;
+}
+
+.cta-buttons .btn-outline-primary:hover {
+    background: #9ed649;
+    border-color: #9ed649;
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.125rem;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .feature-card {
+        padding: 1.5rem 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+    
+    .destination-card {
+        height: 200px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+    }
+    
+    .cta-title {
+        font-size: 2rem;
+    }
+    
+    .cta-buttons .btn {
+        display: block;
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+    
+    .cta-buttons .btn:last-child {
+        margin-bottom: 0;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+    }
+    
+    .section-title {
+        font-size: 1.75rem;
+    }
+    
+    .feature-card h4 {
+        font-size: 1.25rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .cta-title {
+        font-size: 1.75rem;
+    }
+}

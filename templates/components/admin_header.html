@@ -1,0 +1,140 @@
+<!-- Admin Header Component -->
+<header class="admin-header">
+  <div class="admin-header-content">
+    <!-- Page Title -->
+    <div class="page-title-section">
+      <h1 class="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+      <p class="page-subtitle">
+        {% block page_subtitle %}Tổng quan hệ thống{% endblock %}
+      </p>
+    </div>
+
+    <!-- Header Actions -->
+    <div class="header-actions">
+      <!-- Notifications -->
+      <div class="notification-dropdown">
+        <button
+          class="btn btn-outline-secondary btn-sm"
+          data-bs-toggle="dropdown"
+        >
+          <i class="fas fa-bell"></i>
+          <span class="badge bg-danger notification-badge">3</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end notification-menu">
+          <li class="dropdown-header">Thông báo mới</li>
+          <li>
+            <a class="dropdown-item" href="#">
+              <div class="notification-item">
+                <i class="fas fa-user-plus text-success"></i>
+                <div class="notification-content">
+                  <div class="notification-title">Người dùng mới đăng ký</div>
+                  <div class="notification-time">5 phút trước</div>
+                </div>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="#">
+              <div class="notification-item">
+                <i class="fas fa-home text-primary"></i>
+                <div class="notification-content">
+                  <div class="notification-title">Homestay mới được thêm</div>
+                  <div class="notification-time">10 phút trước</div>
+                </div>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item" href="#">
+              <div class="notification-item">
+                <i class="fas fa-credit-card text-warning"></i>
+                <div class="notification-content">
+                  <div class="notification-title">Thanh toán thành công</div>
+                  <div class="notification-time">15 phút trước</div>
+                </div>
+              </div>
+            </a>
+          </li>
+          <li><hr class="dropdown-divider" /></li>
+          <li>
+            <a class="dropdown-item text-center" href="#"
+              >Xem tất cả thông báo</a
+            >
+          </li>
+        </ul>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <button
+          class="btn btn-primary btn-sm"
+          data-bs-toggle="modal"
+          data-bs-target="#quickActionModal"
+        >
+          <i class="fas fa-plus me-2"></i>
+          Thêm mới
+        </button>
+      </div>
+
+      <!-- User Info -->
+      <div class="user-info">
+        <div class="user-avatar">
+          {% if current_user.avatar %}
+          <img
+            src="{{ current_user.avatar }}"
+            alt="Avatar"
+            class="rounded-circle"
+          />
+          {% else %}
+          <i class="fas fa-user-circle"></i>
+          {% endif %}
+        </div>
+        <div class="user-details">
+          <div class="user-name">{{ current_user.username }}</div>
+          <div class="user-role">
+            {% if current_user.is_super_admin %} Super Admin {% else %} Admin {%
+            endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Quick Action Modal -->
+<div class="modal fade" id="quickActionModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Thêm mới</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <a
+              href="{{ url_for('admin_users.create_owner') }}"
+              class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center"
+            >
+              <i class="fas fa-user-plus fa-2x mb-2"></i>
+              <span>Tạo Owner</span>
+            </a>
+          </div>
+          <div class="col-md-6">
+            <a
+              href="{{ url_for('admin_users.create_admin') }}"
+              class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center"
+            >
+              <i class="fas fa-user-shield fa-2x mb-2"></i>
+              <span>Tạo Admin</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

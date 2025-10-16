@@ -1,0 +1,297 @@
+<!-- Reusable Pagination Component -->
+
+{% macro pagination(pagination_obj, base_url, base_params=None, anchor='',
+show_info=True, size='normal') %} {% if pagination_obj and pagination_obj.pages
+> 1 %}
+<!-- Pagination Info -->
+{% if show_info %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <span class="text-muted">
+    Hiển thị {{ ((pagination_obj.page - 1) * pagination_obj.per_page + 1) }} -
+    {{ pagination_obj.page * pagination_obj.per_page if pagination_obj.page *
+    pagination_obj.per_page <= pagination_obj.total else pagination_obj.total }}
+    trong {{ pagination_obj.total }} kết quả
+  </span>
+  <span class="text-muted">
+    Trang {{ pagination_obj.page }} / {{ pagination_obj.pages }}
+  </span>
+</div>
+{% endif %}
+
+<!-- Pagination Navigation -->
+<nav aria-label="Page navigation">
+  <ul
+    class="pagination justify-content-center {% if size == 'small' %}pagination-sm{% elif size == 'large' %}pagination-lg{% endif %}"
+  >
+    <!-- Previous Button -->
+    {% if pagination_obj.has_prev %}
+    <li class="page-item">
+      <a
+        class="page-link"
+        href="{{ url_for(base_url, page=pagination_obj.prev_num, **(base_params or {})) }}{{ anchor }}"
+        aria-label="Trang trước"
+      >
+        <i class="fas fa-chevron-left"></i>
+        <span class="d-none d-sm-inline ms-1">Trước</span>
+      </a>
+    </li>
+    {% else %}
+    <li class="page-item disabled">
+      <span class="page-link" aria-label="Trang trước">
+        <i class="fas fa-chevron-left"></i>
+        <span class="d-none d-sm-inline ms-1">Trước</span>
+      </span>
+    </li>
+    {% endif %}
+
+    <!-- Page Numbers -->
+    {% set start_page = [1, pagination_obj.page - 2]|max %} {% set end_page =
+    [pagination_obj.pages, pagination_obj.page + 2]|min %}
+
+    <!-- First page if not in range -->
+    {% if start_page > 1 %}
+    <li class="page-item">
+      <a
+        class="page-link"
+        href="{{ url_for(base_url, page=1, **(base_params or {})) }}{{ anchor }}"
+      >
+        1
+      </a>
+    </li>
+    {% if start_page > 2 %}
+    <li class="page-item disabled">
+      <span class="page-link">...</span>
+    </li>
+    {% endif %} {% endif %}
+
+    <!-- Page numbers in range -->
+    {% for page_num in range(start_page, end_page + 1) %}
+    <li
+      class="page-item {% if page_num == pagination_obj.page %}active{% endif %}"
+    >
+      <a
+        class="page-link"
+        href="{{ url_for(base_url, page=page_num, **(base_params or {})) }}{{ anchor }}"
+      >
+        {{ page_num }}
+      </a>
+    </li>
+    {% endfor %}
+
+    <!-- Last page if not in range -->
+    {% if end_page < pagination_obj.pages %} {% if end_page <
+    pagination_obj.pages - 1 %}
+    <li class="page-item disabled">
+      <span class="page-link">...</span>
+    </li>
+    {% endif %}
+    <li class="page-item">
+      <a
+        class="page-link"
+        href="{{ url_for(base_url, page=pagination_obj.pages, **(base_params or {})) }}{{ anchor }}"
+      >
+        {{ pagination_obj.pages }}
+      </a>
+    </li>
+    {% endif %}
+
+    <!-- Next Button -->
+    {% if pagination_obj.has_next %}
+    <li class="page-item">
+      <a
+        class="page-link"
+        href="{{ url_for(base_url, page=pagination_obj.next_num, **(base_params or {})) }}{{ anchor }}"
+        aria-label="Trang sau"
+      >
+        <span class="d-none d-sm-inline me-1">Sau</span>
+        <i class="fas fa-chevron-right"></i>
+      </a>
+    </li>
+    {% else %}
+    <li class="page-item disabled">
+      <span class="page-link" aria-label="Trang sau">
+        <span class="d-none d-sm-inline me-1">Sau</span>
+        <i class="fas fa-chevron-right"></i>
+      </span>
+    </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %} {% endmacro %}
+
+<!-- Simple Pagination Component (minimal version) -->
+{% macro simple_pagination(pagination_obj, base_url, base_params=None,
+anchor='') %} {% if pagination_obj and pagination_obj.pages > 1 %}
+<nav aria-label="Page navigation" class="mt-3">
+  <ul class="pagination pagination-sm justify-content-center">
+    {% if pagination_obj.has_prev %}
+    <li class="page-item">
+      <a
+        class="page-link"
+        href="{{ url_for(base_url, page=pagination_obj.prev_num, **(base_params or {})) }}{{ anchor }}"
+      >
+        <i class="fas fa-chevron-left"></i>
+      </a>
+    </li>
+    {% endif %} {% for page_num in range(1, pagination_obj.pages + 1) %}
+    <li
+      class="page-item {% if page_num == pagination_obj.page %}active{% endif %}"
+    >
+      <a
+        class="page-link"
+        href="{{ url_for(base_url, page=page_num, **(base_params or {})) }}{{ anchor }}"
+      >
+        {{ page_num }}
+      </a>
+    </li>
+    {% endfor %} {% if pagination_obj.has_next %}
+    <li class="page-item">
+      <a
+        class="page-link"
+        href="{{ url_for(base_url, page=pagination_obj.next_num, **(base_params or {})) }}{{ anchor }}"
+      >
+        <i class="fas fa-chevron-right"></i>
+      </a>
+    </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %} {% endmacro %}
+
+<!-- Pagination with Jump to Page -->
+{% macro advanced_pagination(pagination_obj, base_url, base_params=None,
+anchor='', show_jump=True) %} {% if pagination_obj and pagination_obj.pages > 1
+%}
+<!-- Pagination Info -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <span class="text-muted">
+    Hiển thị {{ ((pagination_obj.page - 1) * pagination_obj.per_page + 1) }} -
+    {{ pagination_obj.page * pagination_obj.per_page if pagination_obj.page *
+    pagination_obj.per_page <= pagination_obj.total else pagination_obj.total }}
+    trong {{ pagination_obj.total }} kết quả
+  </span>
+
+  {% if show_jump %}
+  <div class="d-flex align-items-center gap-2">
+    <span class="text-muted small">Chuyển đến trang:</span>
+    <form
+      method="GET"
+      action="{{ url_for(base_url, **(base_params or {})) }}{{ anchor }}"
+      class="d-flex gap-1"
+    >
+      {% for key, value in (base_params or {}).items() %}
+      <input type="hidden" name="{{ key }}" value="{{ value }}" />
+      {% endfor %}
+      <input
+        type="number"
+        name="page"
+        min="1"
+        max="{{ pagination_obj.pages }}"
+        value="{{ pagination_obj.page }}"
+        class="form-control form-control-sm"
+        style="width: 60px"
+        onchange="this.form.submit()"
+      />
+    </form>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Pagination Navigation -->
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center">
+    <!-- Previous Button -->
+    {% if pagination_obj.has_prev %}
+    <li class="page-item">
+      <a
+        class="page-link"
+        href="{{ url_for(base_url, page=pagination_obj.prev_num, **(base_params or {})) }}{{ anchor }}"
+        aria-label="Trang trước"
+      >
+        <i class="fas fa-chevron-left"></i>
+        <span class="d-none d-sm-inline ms-1">Trước</span>
+      </a>
+    </li>
+    {% else %}
+    <li class="page-item disabled">
+      <span class="page-link" aria-label="Trang trước">
+        <i class="fas fa-chevron-left"></i>
+        <span class="d-none d-sm-inline ms-1">Trước</span>
+      </span>
+    </li>
+    {% endif %}
+
+    <!-- Page Numbers with Smart Range -->
+    {% set start_page = [1, pagination_obj.page - 2]|max %} {% set end_page =
+    [pagination_obj.pages, pagination_obj.page + 2]|min %}
+
+    <!-- First page if not in range -->
+    {% if start_page > 1 %}
+    <li class="page-item">
+      <a
+        class="page-link"
+        href="{{ url_for(base_url, page=1, **(base_params or {})) }}{{ anchor }}"
+      >
+        1
+      </a>
+    </li>
+    {% if start_page > 2 %}
+    <li class="page-item disabled">
+      <span class="page-link">...</span>
+    </li>
+    {% endif %} {% endif %}
+
+    <!-- Page numbers in range -->
+    {% for page_num in range(start_page, end_page + 1) %}
+    <li
+      class="page-item {% if page_num == pagination_obj.page %}active{% endif %}"
+    >
+      <a
+        class="page-link"
+        href="{{ url_for(base_url, page=page_num, **(base_params or {})) }}{{ anchor }}"
+      >
+        {{ page_num }}
+      </a>
+    </li>
+    {% endfor %}
+
+    <!-- Last page if not in range -->
+    {% if end_page < pagination_obj.pages %} {% if end_page <
+    pagination_obj.pages - 1 %}
+    <li class="page-item disabled">
+      <span class="page-link">...</span>
+    </li>
+    {% endif %}
+    <li class="page-item">
+      <a
+        class="page-link"
+        href="{{ url_for(base_url, page=pagination_obj.pages, **(base_params or {})) }}{{ anchor }}"
+      >
+        {{ pagination_obj.pages }}
+      </a>
+    </li>
+    {% endif %}
+
+    <!-- Next Button -->
+    {% if pagination_obj.has_next %}
+    <li class="page-item">
+      <a
+        class="page-link"
+        href="{{ url_for(base_url, page=pagination_obj.next_num, **(base_params or {})) }}{{ anchor }}"
+        aria-label="Trang sau"
+      >
+        <span class="d-none d-sm-inline me-1">Sau</span>
+        <i class="fas fa-chevron-right"></i>
+      </a>
+    </li>
+    {% else %}
+    <li class="page-item disabled">
+      <span class="page-link" aria-label="Trang sau">
+        <span class="d-none d-sm-inline me-1">Sau</span>
+        <i class="fas fa-chevron-right"></i>
+      </span>
+    </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %} {% endmacro %}

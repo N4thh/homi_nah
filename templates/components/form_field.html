@@ -1,0 +1,183 @@
+<!-- Form Field Component -->
+<div class="form-field mb-3">
+    {% if field.type == 'text' or field.type == 'email' or field.type == 'password' or field.type == 'number' or field.type == 'tel' %}
+    <label for="{{ field.name }}" class="form-label">
+        {{ field.label }}
+        {% if field.required %}
+        <span class="text-danger">*</span>
+        {% endif %}
+    </label>
+    
+    <div class="input-group">
+        {% if field.icon %}
+        <span class="input-group-text">
+            <i class="fas fa-{{ field.icon }}"></i>
+        </span>
+        {% endif %}
+        
+        <input type="{{ field.type }}" 
+               class="form-control {{ 'is-invalid' if field.errors else '' }}" 
+               id="{{ field.name }}" 
+               name="{{ field.name }}" 
+               value="{{ field.value or '' }}"
+               placeholder="{{ field.placeholder or '' }}"
+               {% if field.required %}required{% endif %}
+               {% if field.disabled %}disabled{% endif %}
+               {% if field.readonly %}readonly{% endif %}
+               {% if field.min %}min="{{ field.min }}"{% endif %}
+               {% if field.max %}max="{{ field.max }}"{% endif %}
+               {% if field.step %}step="{{ field.step }}"{% endif %}>
+    </div>
+    
+    {% elif field.type == 'textarea' %}
+    <label for="{{ field.name }}" class="form-label">
+        {{ field.label }}
+        {% if field.required %}
+        <span class="text-danger">*</span>
+        {% endif %}
+    </label>
+    
+    <textarea class="form-control {{ 'is-invalid' if field.errors else '' }}" 
+              id="{{ field.name }}" 
+              name="{{ field.name }}" 
+              rows="{{ field.rows or 3 }}"
+              placeholder="{{ field.placeholder or '' }}"
+              {% if field.required %}required{% endif %}
+              {% if field.disabled %}disabled{% endif %}
+              {% if field.readonly %}readonly{% endif %}>{{ field.value or '' }}</textarea>
+    
+    {% elif field.type == 'select' %}
+    <label for="{{ field.name }}" class="form-label">
+        {{ field.label }}
+        {% if field.required %}
+        <span class="text-danger">*</span>
+        {% endif %}
+    </label>
+    
+    <select class="form-select {{ 'is-invalid' if field.errors else '' }}" 
+            id="{{ field.name }}" 
+            name="{{ field.name }}"
+            {% if field.required %}required{% endif %}
+            {% if field.disabled %}disabled{% endif %}
+            {% if field.multiple %}multiple{% endif %}>
+        {% if field.placeholder %}
+        <option value="">{{ field.placeholder }}</option>
+        {% endif %}
+        {% for option in field.options %}
+        <option value="{{ option.value }}" 
+                {{ 'selected' if option.value == field.value else '' }}>
+            {{ option.text }}
+        </option>
+        {% endfor %}
+    </select>
+    
+    {% elif field.type == 'checkbox' %}
+    <div class="form-check">
+        <input class="form-check-input {{ 'is-invalid' if field.errors else '' }}" 
+               type="checkbox" 
+               id="{{ field.name }}" 
+               name="{{ field.name }}" 
+               value="{{ field.value or '1' }}"
+               {{ 'checked' if field.checked else '' }}
+               {% if field.required %}required{% endif %}
+               {% if field.disabled %}disabled{% endif %}>
+        <label class="form-check-label" for="{{ field.name }}">
+            {{ field.label }}
+            {% if field.required %}
+            <span class="text-danger">*</span>
+            {% endif %}
+        </label>
+    </div>
+    
+    {% elif field.type == 'radio' %}
+    <label class="form-label">
+        {{ field.label }}
+        {% if field.required %}
+        <span class="text-danger">*</span>
+        {% endif %}
+    </label>
+    
+    {% for option in field.options %}
+    <div class="form-check">
+        <input class="form-check-input {{ 'is-invalid' if field.errors else '' }}" 
+               type="radio" 
+               id="{{ field.name }}_{{ loop.index }}" 
+               name="{{ field.name }}" 
+               value="{{ option.value }}"
+               {{ 'checked' if option.value == field.value else '' }}
+               {% if field.required %}required{% endif %}
+               {% if field.disabled %}disabled{% endif %}>
+        <label class="form-check-label" for="{{ field.name }}_{{ loop.index }}">
+            {{ option.text }}
+        </label>
+    </div>
+    {% endfor %}
+    
+    {% elif field.type == 'file' %}
+    <label for="{{ field.name }}" class="form-label">
+        {{ field.label }}
+        {% if field.required %}
+        <span class="text-danger">*</span>
+        {% endif %}
+    </label>
+    
+    <input type="file" 
+           class="form-control {{ 'is-invalid' if field.errors else '' }}" 
+           id="{{ field.name }}" 
+           name="{{ field.name }}"
+           {% if field.accept %}accept="{{ field.accept }}"{% endif %}
+           {% if field.multiple %}multiple{% endif %}
+           {% if field.required %}required{% endif %}
+           {% if field.disabled %}disabled{% endif %}>
+    
+    {% if field.help_text %}
+    <div class="form-text">{{ field.help_text }}</div>
+    {% endif %}
+    
+    {% elif field.type == 'date' or field.type == 'datetime-local' or field.type == 'time' %}
+    <label for="{{ field.name }}" class="form-label">
+        {{ field.label }}
+        {% if field.required %}
+        <span class="text-danger">*</span>
+        {% endif %}
+    </label>
+    
+    <input type="{{ field.type }}" 
+           class="form-control {{ 'is-invalid' if field.errors else '' }}" 
+           id="{{ field.name }}" 
+           name="{{ field.name }}" 
+           value="{{ field.value or '' }}"
+           {% if field.required %}required{% endif %}
+           {% if field.disabled %}disabled{% endif %}
+           {% if field.readonly %}readonly{% endif %}
+           {% if field.min %}min="{{ field.min }}"{% endif %}
+           {% if field.max %}max="{{ field.max }}"{% endif %}>
+    
+    {% elif field.type == 'hidden' %}
+    <input type="hidden" 
+           id="{{ field.name }}" 
+           name="{{ field.name }}" 
+           value="{{ field.value or '' }}">
+    
+    {% else %}
+    <!-- Custom field type -->
+    {% if field.custom_html %}
+    {{ field.custom_html | safe }}
+    {% endif %}
+    {% endif %}
+    
+    <!-- Error messages -->
+    {% if field.errors %}
+    <div class="invalid-feedback">
+        {% for error in field.errors %}
+        {{ error }}
+        {% if not loop.last %}<br>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Help text -->
+    {% if field.help_text and field.type != 'file' %}
+    <div class="form-text">{{ field.help_text }}</div>
+    {% endif %}
+</div>

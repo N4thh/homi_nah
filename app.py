@@ -1,0 +1,341 @@
+from dotenv import load_dotenv
+load_dotenv()
+import os
+from flask import Flask, render_template, session, send_from_directory, request, redirect, url_for, flash, jsonify
+from flask_login import LoginManager, current_user, login_user, logout_user, login_required
+from flask_migrate import Migrate
+from flask_wtf.csrf import CSRFProtect
+from config.config import Config
+from app.models.models import db, Admin, Owner, Renter, Statistics, Booking, Review, Amenity, Home
+from app.utils.utils import get_rank_info, get_location_name
+from app.utils.address_formatter import format_district, format_city, format_full_address
+import json
+from datetime import datetime, timedelta
+from werkzeug.security import generate_password_hash
+
+# Initialize Flask app
+app = Flask(__name__)
+app.config.from_object(Config)
+
+# Initialize CSRF protection
+csrf = CSRFProtect(app)
+
+# Initialize database
+db.init_app(app)
+
+# Initialize login manager
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'auth.login'
+
+app.jinja_env.filters['rank_info'] = get_rank_info
+app.jinja_env.filters['location_name'] = get_location_name
+
+# Add address formatting filters
+@app.template_filter('format_district')
+def format_district_filter(district):
+    return format_district(district)
+
+@app.template_filter('format_city') 
+def format_city_filter(city):
+    return format_city(city)
+
+# Add functions to template global context
+@app.template_global()
+def format_full_address(street=None, ward=None, district=None, city=None):
+    from app.utils.address_formatter import format_full_address as formatter
+    return formatter(street, ward, district, city)
+
+# Add custom filter
+@app.template_filter('from_json')
+def from_json_filter(value):
+    try:
+        if value is None or value == '':
+            return []
+        if isinstance(value, str):
+            return json.loads(value)
+        return value  # If already parsed
+    except (json.JSONDecodeError, TypeError, AttributeError) as e:
+        print(f"Error parsing JSON in template filter: {e}, value: {value}")
+        return []
+
+@app.template_filter('property_type_vn')
+def property_type_vn_filter(value):
+    """Chuyển đổi property type sang tiếng Việt"""
+    property_type_map = {
+        'townhouse': 'Nhà phố',
+        'apartment': 'Chung cư', 
+        'villa': 'Villa',
+        'penthouse': 'Penthouse',
+        'farmstay': 'Farmstay',
+        'resort': 'Resort'
+    }
+    return property_type_map.get(value, value)
+
+@app.template_filter('format_price')
+def format_price_filter(value):
+    """Format price with proper number formatting, handle None values"""
+    if value is None or value == 0:
+        return "0"
+    try:
+        return "{:,.0f}".format(value)
+    except (TypeError, ValueError):
+        return "0"
+
+@login_manager.user_loader
+def load_user(user_id):
+    try:
+        # Get user role from session to load correct user type
+        user_role = session.get('user_role')
+        print(f"Loading user with ID: {user_id}, Role from session: {user_role}")
+        
+        # Try to load based on session role first
+        if user_role == 'admin':
+            admin = db.session.get(Admin, int(user_id))
+            if admin:
+                print(f"Loaded admin: {admin.username}")
+                return admin
+        elif user_role == 'owner':
+            owner = db.session.get(Owner, int(user_id))
+            if owner:
+                print(f"Loaded owner: {owner.username}")
+                return owner
+        elif user_role == 'renter':
+            renter = db.session.get(Renter, int(user_id))
+            if renter:
+                print(f"Loaded renter: {renter.username}")
+                return renter
+        
+        # Fallback: try to load from each user model if session role not available
+        admin = db.session.get(Admin, int(user_id))
+        if admin:
+            print(f"Fallback loaded admin: {admin.username}")
+            return admin
+        
+        owner = db.session.get(Owner, int(user_id))
+        if owner:
+            print(f"Fallback loaded owner: {owner.username}")
+            return owner
+        
+        renter = db.session.get(Renter, int(user_id))
+        if renter:
+            print(f"Fallback loaded renter: {renter.username}")
+            return renter
+        
+        print(f"No user found with ID: {user_id}")
+        return None
+    except Exception as e:
+        print(f"Error loading user {user_id}: {str(e)}")
+        return None
+
+# Initialize migration
+migrate = Migrate(app, db)
+
+# Add session persistence middleware
+@app.before_request
+def before_request():
+    """Ensure session is properly maintained"""
+    try:
+        # Force session to be saved
+        session.permanent = True
+        # Ensure user_role is maintained in session
+        if current_user.is_authenticated:
+            if hasattr(current_user, 'is_admin') and current_user.is_admin():
+                session['user_role'] = 'admin'
+            elif hasattr(current_user, 'is_owner') and current_user.is_owner():
+                session['user_role'] = 'owner'
+            elif hasattr(current_user, 'is_renter') and current_user.is_renter():
+                session['user_role'] = 'renter'
+    except Exception as e:
+        print(f"Error in before_request: {str(e)}")
+        pass
+
+# Create tables and add admin if not exist
+with app.app_context():
+    db.create_all()
+    print("Database tables created successfully.")
+
+    # Check if any admin exists and create one if not
+    existing_admin = Admin.query.first()
+    if existing_admin:
+        print(f"Admin user already exists: {existing_admin.username}")
+    else:
+        admin_user = Admin(username='admin', email='admin@example.com')
+        admin_user.set_password('123')
+        db.session.add(admin_user)
+        db.session.commit()
+        print("Default admin user created with username='admin', password='123'")
+        print("Please login and update the admin information immediately!")
+
+    # Create initial statistics if not exist
+    today = datetime.now().date()
+    try:
+        stats = Statistics.query.filter_by(date=today).first()
+        if not stats:
+            stats = Statistics(
+                date=today,
+                total_users=0,
+                total_owners=0,
+                total_renters=0,
+                total_bookings=0,
+                hourly_bookings=0,
+                overnight_bookings=0,
+                total_hours=0,
+                booking_rate=0,
+                common_type="Theo giờ",
+                average_rating=0,
+                hourly_stats=json.dumps({
+                    'labels': ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                    'data': [0, 0, 0, 0, 0, 0, 0]
+                }),
+                overnight_stats=json.dumps({
+                    'labels': ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+                    'data': [0, 0, 0, 0, 0, 0, 0]
+                }),
+                top_homes=json.dumps([])
+            )
+            db.session.add(stats)
+            db.session.commit()
+            print("Initial statistics created.")
+    except Exception as e:
+        print(f"Error creating statistics: {e}")
+
+# Import and register blueprints
+from app.routes.auth import auth_bp, email_verification_bp
+
+# Phase 2: New modular blueprints (organized in folders)
+# Owner modules
+from app.routes.owner import (
+    owner_dashboard_bp,
+    owner_homes_bp,
+    owner_bookings_bp,
+    owner_profile_bp,
+    owner_reports_bp
+)
+
+# Admin modules
+from app.routes.admin import (
+    admin_dashboard_bp,
+    admin_users_bp,
+    admin_homes_bp,
+    admin_payments_bp,
+    admin_reports_bp
+)
+
+# Renter modules
+from app.routes.renter import (
+    renter_dashboard_bp,
+    renter_bookings_bp,
+    renter_profile_bp,
+    renter_reviews_bp,
+    renter_search_bp,
+    renter_homes_bp
+)
+
+# Payment modules
+from app.routes.payment import payment_bp
+
+# Webhook modules
+from app.routes.webhook import webhook_bp
+
+# API modules
+from app.routes.api import api_bp, availability_api_bp, rate_limit_api
+
+# Notification modules
+from app.routes.notification import notification_api_bp
+from app.utils.background_tasks import init_background_tasks
+from app.utils.rate_limiter import init_rate_limiter
+from app.utils.rate_limit_middleware import add_rate_limit_headers, before_request_rate_limit
+from app.utils.cache import init_cache
+
+
+# Register Phase 2 modular blueprints
+# Owner modules
+app.register_blueprint(owner_dashboard_bp)
+app.register_blueprint(owner_homes_bp)
+app.register_blueprint(owner_bookings_bp)
+app.register_blueprint(owner_profile_bp)
+app.register_blueprint(owner_reports_bp)
+
+# Admin modules
+app.register_blueprint(admin_dashboard_bp)
+app.register_blueprint(admin_users_bp)
+app.register_blueprint(admin_homes_bp)
+app.register_blueprint(admin_payments_bp)
+app.register_blueprint(admin_reports_bp)
+
+# Renter modules
+app.register_blueprint(renter_dashboard_bp)
+app.register_blueprint(renter_bookings_bp)
+app.register_blueprint(renter_profile_bp)
+app.register_blueprint(renter_reviews_bp)
+app.register_blueprint(renter_search_bp)
+app.register_blueprint(renter_homes_bp)
+
+# Register other blueprints
+app.register_blueprint(auth_bp)
+app.register_blueprint(payment_bp)
+app.register_blueprint(webhook_bp)
+app.register_blueprint(notification_api_bp)
+app.register_blueprint(api_bp)
+app.register_blueprint(email_verification_bp)
+app.register_blueprint(rate_limit_api)
+app.register_blueprint(availability_api_bp)
+
+# Legacy blueprints (commented out for testing)
+# app.register_blueprint(owner_bp)
+# app.register_blueprint(renter_bp)
+# app.register_blueprint(admin_bp)
+
+# Initialize background tasks
+init_background_tasks(app)
+
+# Initialize rate limiter
+init_rate_limiter(app)
+
+# Initialize cache
+init_cache(app)
+
+# Register middleware
+app.before_request(before_request_rate_limit)
+app.after_request(add_rate_limit_headers)
+
+
+# Home route
+@app.route('/')
+def home():
+    # If user is logged in and is owner, redirect to their dashboard instead of showing home page
+    if current_user.is_authenticated and current_user.is_owner():
+        return redirect(url_for('owner_dashboard.dashboard'))
+    # If user is logged in and is admin, redirect to their dashboard instead of showing home page
+    if current_user.is_authenticated and isinstance(current_user, Admin):
+        return redirect(url_for('admin_dashboard.dashboard'))
+    # Retrieve featured homes to display on the homepage
+    from sqlalchemy.orm import joinedload
+    featured_homes_query = Home.query.options(
+        joinedload(Home.images),
+        joinedload(Home.reviews)
+    ).filter(
+        Home.is_active.is_(True)
+    )
+
+    if hasattr(Home, 'is_approved'):
+        featured_homes_query = featured_homes_query.filter(
+            Home.is_approved.is_(True)
+        )
+
+    featured_homes = featured_homes_query.limit(6).all()
+    return render_template('home.html', homestays=featured_homes)
+
+# Route to handle image uploads (legacy)
+@app.route('/static/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(os.path.join(app.config.get('UPLOAD_FOLDER', 'static/uploads')), filename)
+
+# Route to handle new data directory structure
+@app.route('/static/data/<path:filepath>')
+def data_file(filepath):
+    return send_from_directory(os.path.join('static', 'data'), filepath)
+
+if __name__ == '__main__':
+    app.run(debug=True)

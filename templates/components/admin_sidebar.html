@@ -1,0 +1,83 @@
+<!-- Admin Sidebar Component -->
+<aside class="admin-sidebar">
+  <div class="sidebar-header">
+    <h5 class="sidebar-title">
+      <i class="fas fa-tachometer-alt me-2"></i>
+      Admin Panel
+    </h5>
+  </div>
+
+  <ul class="sidebar-menu">
+    <li class="sidebar-menu-item">
+      <a
+        href="{{ url_for('admin_dashboard.dashboard') }}"
+        class="sidebar-menu-link {{ 'active' if request.endpoint == 'admin_dashboard.dashboard' }}"
+      >
+        <i class="fas fa-home"></i>
+        <span>Dashboard</span>
+      </a>
+    </li>
+
+    <li class="sidebar-menu-item">
+      <a
+        href="{{ url_for('admin_users.users') }}"
+        class="sidebar-menu-link {{ 'active' if request.endpoint.startswith('admin_users') }}"
+      >
+        <i class="fas fa-users"></i>
+        <span>Quản lý người dùng</span>
+      </a>
+    </li>
+
+    <li class="sidebar-menu-item">
+      <a
+        href="{{ url_for('admin_homes.homes') }}"
+        class="sidebar-menu-link {{ 'active' if request.endpoint.startswith('admin_homes') }}"
+      >
+        <i class="fas fa-building"></i>
+        <span>Quản lý homestay</span>
+      </a>
+    </li>
+
+    <li class="sidebar-menu-item">
+      <a
+        href="{{ url_for('admin_payments.payments') }}"
+        class="sidebar-menu-link {{ 'active' if request.endpoint.startswith('admin_payments') }}"
+      >
+        <i class="fas fa-credit-card"></i>
+        <span>Quản lý thanh toán</span>
+      </a>
+    </li>
+
+    <li class="sidebar-menu-item">
+      <a
+        href="{{ url_for('admin_reports.reports') }}"
+        class="sidebar-menu-link {{ 'active' if request.endpoint.startswith('admin_reports') }}"
+      >
+        <i class="fas fa-chart-bar"></i>
+        <span>Báo cáo</span>
+      </a>
+    </li>
+
+    {% if current_user.is_super_admin %}
+    <li class="sidebar-menu-item">
+      <a
+        href="{{ url_for('admin_users.admins') }}"
+        class="sidebar-menu-link {{ 'active' if request.endpoint == 'admin_users.admins' }}"
+      >
+        <i class="fas fa-user-shield"></i>
+        <span>Quản lý Admin</span>
+      </a>
+    </li>
+    {% endif %}
+  </ul>
+
+  <div class="sidebar-footer">
+    <a
+      href="{{ url_for('admin_dashboard.profile') }}"
+      class="sidebar-footer-link"
+    >
+      <i class="fas fa-user me-2"></i>
+      Hồ sơ của tôi
+    </a>
+  </div>
+</aside>

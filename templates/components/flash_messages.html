@@ -1,0 +1,28 @@
+<!-- Enhanced Flash Messages Component -->
+{% with messages = get_flashed_messages(with_categories=true) %} {% if messages
+%}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      {% for category, message in messages %}
+      // Map Flask flash categories to notification types
+      let notificationType = '{{ category }}';
+      if (notificationType === 'error') notificationType = 'error';
+      else if (notificationType === 'success') notificationType = 'success';
+      else if (notificationType === 'warning') notificationType = 'warning';
+      else notificationType = 'info';
+
+      // Show notification popup
+      setTimeout(() => {
+          if (window.showNotification) {
+              window.showNotification(
+                  notificationType,
+                  '{{ "Thành công" if category == "success" else "Lỗi" if category == "error" else "Cảnh báo" if category == "warning" else "Thông báo" }}',
+                  '{{ message|e }}',
+                  5000
+              );
+          }
+      }, 500);
+      {% endfor %}
+  });
+</script>
+{% endif %} {% endwith %}

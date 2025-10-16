@@ -1,0 +1,145 @@
+<!-- Footer Component -->
+<footer class="bg-dark text-light py-5 mt-5">
+  <div class="container">
+    <div class="row">
+      <!-- Company Info -->
+      <div class="col-md-4 mb-4">
+        <h5 class="mb-3">
+          <i class="fas fa-home me-2"></i>
+          <span data-translate="homestay-booking">Homi</span>
+        </h5>
+        <p class="text-muted" data-translate="footer-description">
+          Nền tảng đặt homestay uy tín và tiện lợi nhất Việt Nam. Kết nối chủ
+          nhà và khách du lịch một cách an toàn và hiệu quả.
+        </p>
+        <div class="social-links">
+          <a href="#" class="text-light me-3"
+            ><i class="fab fa-facebook-f"></i
+          ></a>
+          <a href="#" class="text-light me-3"><i class="fab fa-twitter"></i></a>
+          <a href="#" class="text-light me-3"
+            ><i class="fab fa-instagram"></i
+          ></a>
+          <a href="#" class="text-light"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="col-md-2 mb-4">
+        <h6 class="mb-3" data-translate="quick-links">Liên kết nhanh</h6>
+        <ul class="list-unstyled">
+          <li class="mb-2">
+            <a
+              href="{{ url_for('home') }}"
+              class="text-muted text-decoration-none"
+              data-translate="home"
+              >Trang chủ</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              href="{{ url_for('renter_search.search') }}"
+              class="text-muted text-decoration-none"
+              data-translate="search"
+              >Tìm kiếm</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              href="{{ url_for('home') }}#about"
+              class="text-muted text-decoration-none"
+              data-translate="about"
+              >Giới thiệu</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              href="{{ url_for('home') }}#contact"
+              class="text-muted text-decoration-none"
+              data-translate="contact"
+              >Liên hệ</a
+            >
+          </li>
+        </ul>
+      </div>
+
+      <!-- Support -->
+      <div class="col-md-3 mb-4">
+        <h6 class="mb-3" data-translate="support">Hỗ trợ</h6>
+        <ul class="list-unstyled">
+          <li class="mb-2">
+            <a
+              href="#"
+              class="text-muted text-decoration-none"
+              data-translate="help-center"
+              >Trung tâm trợ giúp</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              href="#"
+              class="text-muted text-decoration-none"
+              data-translate="safety"
+              >An toàn</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              href="#"
+              class="text-muted text-decoration-none"
+              data-translate="terms"
+              >Điều khoản</a
+            >
+          </li>
+          <li class="mb-2">
+            <a
+              href="#"
+              class="text-muted text-decoration-none"
+              data-translate="privacy"
+              >Bảo mật</a
+            >
+          </li>
+        </ul>
+      </div>
+
+      <!-- Contact Info -->
+      <div class="col-md-3 mb-4">
+        <h6 class="mb-3" data-translate="contact-info">Thông tin liên hệ</h6>
+        <div class="contact-info">
+          <p class="mb-2">
+            <i class="fas fa-envelope me-2"></i>
+            <span data-translate="email">Email:</span> support@homi.vn
+          </p>
+          <p class="mb-2">
+            <i class="fas fa-phone me-2"></i>
+            <span data-translate="phone">Điện thoại:</span> 1900 1234
+          </p>
+          <p class="mb-2">
+            <i class="fas fa-map-marker-alt me-2"></i>
+            <span data-translate="address">Địa chỉ:</span> Hà Nội, Việt Nam
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Copyright -->
+    <hr class="my-4" />
+    <div class="row align-items-center">
+      <div class="col-md-6">
+        <p class="mb-0 text-muted">
+          &copy; 2024 <span data-translate="homestay-booking">Homi</span>.
+          <span data-translate="all-rights-reserved"
+            >Tất cả quyền được bảo lưu.</span
+          >
+        </p>
+      </div>
+      <div class="col-md-6 text-md-end">
+        <p class="mb-0 text-muted">
+          <span data-translate="made-with">Được tạo với</span>
+          <i class="fas fa-heart text-danger"></i>
+          <span data-translate="in-vietnam">tại Việt Nam</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>

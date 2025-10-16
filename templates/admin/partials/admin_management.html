@@ -1,0 +1,95 @@
+<!-- Admin Management Section Content -->
+<div class="p-3">
+  <!-- Admin Management Content -->
+  <div class="table-header">
+    <button
+      class="add-room-btn btn btn-success d-flex align-items-center gap-2"
+      data-bs-toggle="modal"
+      data-bs-target="#addAdminModal"
+    >
+      <i class="fas fa-plus"></i>
+      Thêm Admin
+    </button>
+
+  
+  </div>
+
+  <!-- Admin Table -->
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Tên đăng nhập</th>
+          <th>Email</th>
+          <th>Quyền hạn</th>
+          <th>Ngày tạo</th>
+          <th>Trạng thái</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if admins %} {% for admin in admins %}
+        <tr>
+          <td>{{ admin.username }}</td>
+          <td>{{ admin.email }}</td>
+          <td>
+            {% if admin.is_super_admin %}
+            <span class="badge bg-danger">Super Admin</span>
+            {% else %}
+            <span class="badge bg-primary">Admin</span>
+            {% endif %}
+          </td>
+          <td>{{ admin.created_at.strftime('%d/%m/%Y') }}</td>
+          <td>
+            <span class="badge bg-success">Hoạt động</span>
+          </td>
+          <td>
+            <div class="dropdown">
+              <button
+                class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                type="button"
+                id="dropdownMenuButton{{ admin.id }}"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+              <ul
+                class="dropdown-menu dropdown-menu-end"
+                aria-labelledby="dropdownMenuButton{{ admin.id }}"
+              >
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ url_for('admin_users.edit_admin', admin_id=admin.id) }}"
+                    ><i class="bi bi-pencil-square me-2"></i>Chỉnh sửa</a
+                  >
+                </li>
+                {% if admin.id != current_user.id %}
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a
+                    class="dropdown-item text-danger"
+                    href="{{ url_for('admin_users.delete_admin', admin_id=admin.id) }}"
+                    onclick="return confirm('Bạn có chắc chắn muốn xóa admin này?');"
+                  >
+                    <i class="bi bi-trash me-2"></i>Xóa
+                  </a>
+                </li>
+                {% endif %}
+              </ul>
+            </div>
+          </td>
+        </tr>
+        {% endfor %} {% else %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-4">
+            <i class="fas fa-info-circle me-2"></i>
+            Không có dữ liệu admin nào
+          </td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>

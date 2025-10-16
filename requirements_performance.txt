@@ -1,0 +1,9 @@
+# Optional dependencies for enhanced performance monitoring
+# Install with: pip install -r requirements_performance.txt
+
+# Performance monitoring
+psutil>=5.9.0
+
+# Additional monitoring tools (optional)
+memory-profiler>=0.60.0
+py-spy>=0.3.14

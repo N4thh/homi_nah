@@ -1,0 +1,69 @@
+<!-- Search Form Component -->
+<div class="search-form-container">
+    <form class="search-form" method="GET" action="{{ url_for('renter_search.search') }}">
+        <div class="row g-3">
+            <!-- Location Input -->
+            <div class="col-md-3">
+                <label class="form-label" data-translate="location">Địa điểm</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </span>
+                    <input type="text" class="form-control" name="location" 
+                           placeholder="Nhập địa điểm" 
+                           value="{{ request.args.get('location', '') }}">
+                </div>
+            </div>
+
+            <!-- Check-in Date -->
+            <div class="col-md-2">
+                <label class="form-label" data-translate="checkin-date">Ngày đến</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-calendar-alt"></i>
+                    </span>
+                    <input type="date" class="form-control" name="checkin" 
+                           value="{{ request.args.get('checkin', '') }}">
+                </div>
+            </div>
+
+            <!-- Check-out Date -->
+            <div class="col-md-2">
+                <label class="form-label" data-translate="checkout-date">Ngày đi</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-calendar-alt"></i>
+                    </span>
+                    <input type="date" class="form-control" name="checkout" 
+                           value="{{ request.args.get('checkout', '') }}">
+                </div>
+            </div>
+
+            <!-- Number of Guests -->
+            <div class="col-md-2">
+                <label class="form-label" data-translate="guests">Số khách</label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-users"></i>
+                    </span>
+                    <select class="form-control" name="guests">
+                        <option value="1" {{ 'selected' if request.args.get('guests') == '1' }}>1 khách</option>
+                        <option value="2" {{ 'selected' if request.args.get('guests') == '2' }}>2 khách</option>
+                        <option value="3" {{ 'selected' if request.args.get('guests') == '3' }}>3 khách</option>
+                        <option value="4" {{ 'selected' if request.args.get('guests') == '4' }}>4 khách</option>
+                        <option value="5+" {{ 'selected' if request.args.get('guests') == '5+' }}>5+ khách</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Search Button -->
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <button type="submit" class="btn btn-primary w-100 h-100 d-flex align-items-center justify-content-center">
+                    <i class="fas fa-search me-2"></i>
+                    <span data-translate="search">Tìm kiếm</span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

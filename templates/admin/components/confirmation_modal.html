@@ -1,0 +1,264 @@
+<!-- Reusable Confirmation Modal Component -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="confirmationModalLabel">
+                    <i id="confirmationIcon" class="fas fa-exclamation-triangle text-warning me-2"></i>
+                    <span id="confirmationTitle">Xác nhận hành động</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body py-4">
+                <div class="text-center mb-3">
+                    <div id="confirmationIconLarge" class="mb-3">
+                        <i class="fas fa-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
+                    </div>
+                    <p id="confirmationMessage" class="lead mb-2">
+                        Bạn có chắc chắn muốn thực hiện hành động này?
+                    </p>
+                    <p id="confirmationSubMessage" class="text-muted small">
+                        Hành động này không thể hoàn tác.
+                    </p>
+                </div>
+                
+                <!-- User details section (for delete user) -->
+                <div id="userDetailsSection" class="d-none">
+                    <div class="card bg-light border-0 mb-3">
+                        <div class="card-body p-3">
+                            <h6 class="card-title mb-2">Thông tin tài khoản:</h6>
+                            <div class="row g-2">
+                                <div class="col-sm-6">
+                                    <small class="text-muted d-block">Tên:</small>
+                                    <strong id="userDetailName">-</strong>
+                                </div>
+                                <div class="col-sm-6">
+                                    <small class="text-muted d-block">Email:</small>
+                                    <strong id="userDetailEmail">-</strong>
+                                </div>
+                                <div class="col-sm-6">
+                                    <small class="text-muted d-block">Vai trò:</small>
+                                    <span id="userDetailRole" class="badge bg-primary">-</span>
+                                </div>
+                                <div class="col-sm-6">
+                                    <small class="text-muted d-block">Trạng thái:</small>
+                                    <span id="userDetailStatus" class="badge bg-success">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Hủy
+                </button>
+                <button type="button" id="confirmationConfirmBtn" class="btn btn-danger">
+                    <i class="fas fa-trash me-2"></i>Xác nhận
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Confirmation Modal Styles */
+#confirmationModal .modal-content {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+#confirmationModal .modal-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 12px 12px 0 0;
+}
+
+#confirmationModal .btn {
+    border-radius: 8px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+#confirmationModal .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+#confirmationModal .card {
+    border-radius: 8px;
+}
+
+#confirmationModal #confirmationIconLarge i {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Different action types */
+#confirmationModal.delete-action #confirmationIconLarge i {
+    color: #dc3545 !important;
+}
+
+#confirmationModal.delete-action #confirmationIcon {
+    color: #dc3545 !important;
+}
+
+#confirmationModal.toggle-action #confirmationIconLarge i {
+    color: #ffc107 !important;
+}
+
+#confirmationModal.toggle-action #confirmationIcon {
+    color: #ffc107 !important;
+}
+
+#confirmationModal.toggle-action #confirmationConfirmBtn {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #000;
+}
+
+#confirmationModal.toggle-action #confirmationConfirmBtn:hover {
+    background-color: #ffb300;
+    border-color: #ffb300;
+}
+</style>
+
+<script>
+// Reusable Confirmation Modal Component
+class ConfirmationModal {
+    constructor() {
+        this.modal = document.getElementById('confirmationModal');
+        this.modalInstance = new bootstrap.Modal(this.modal);
+        this.confirmCallback = null;
+        this.cancelCallback = null;
+        
+        // Bind events
+        this.bindEvents();
+    }
+    
+    bindEvents() {
+        // Confirm button click
+        document.getElementById('confirmationConfirmBtn').addEventListener('click', () => {
+            this.hide();
+            if (this.confirmCallback) {
+                this.confirmCallback();
+            }
+        });
+        
+        // Modal hidden event
+        this.modal.addEventListener('hidden.bs.modal', () => {
+            if (this.cancelCallback) {
+                this.cancelCallback();
+            }
+            this.reset();
+        });
+    }
+    
+    show(options = {}) {
+        const {
+            title = 'Xác nhận hành động',
+            message = 'Bạn có chắc chắn muốn thực hiện hành động này?',
+            subMessage = 'Hành động này không thể hoàn tác.',
+            confirmText = 'Xác nhận',
+            confirmClass = 'btn-danger',
+            confirmIcon = 'fas fa-check',
+            type = 'warning', // warning, danger, info
+            showUserDetails = false,
+            userDetails = {},
+            onConfirm = null,
+            onCancel = null
+        } = options;
+        
+        // Set callbacks
+        this.confirmCallback = onConfirm;
+        this.cancelCallback = onCancel;
+        
+        // Update modal content
+        document.getElementById('confirmationTitle').textContent = title;
+        document.getElementById('confirmationMessage').textContent = message;
+        document.getElementById('confirmationSubMessage').textContent = subMessage;
+        
+        // Update confirm button
+        const confirmBtn = document.getElementById('confirmationConfirmBtn');
+        confirmBtn.className = `btn ${confirmClass}`;
+        confirmBtn.innerHTML = `<i class="${confirmIcon} me-2"></i>${confirmText}`;
+        
+        // Set modal type class
+        this.modal.className = 'modal fade';
+        if (type === 'delete') {
+            this.modal.classList.add('delete-action');
+        } else if (type === 'toggle') {
+            this.modal.classList.add('toggle-action');
+        }
+        
+        // Update icons based on type
+        const iconClass = type === 'delete' ? 'fas fa-trash-alt' : 
+                         type === 'toggle' ? 'fas fa-toggle-off' : 
+                         'fas fa-exclamation-triangle';
+        
+        document.getElementById('confirmationIcon').className = `${iconClass} me-2`;
+        document.querySelector('#confirmationIconLarge i').className = iconClass;
+        
+        // Show/hide user details
+        const userDetailsSection = document.getElementById('userDetailsSection');
+        if (showUserDetails && userDetails) {
+            userDetailsSection.classList.remove('d-none');
+            document.getElementById('userDetailName').textContent = userDetails.name || '-';
+            document.getElementById('userDetailEmail').textContent = userDetails.email || '-';
+            
+            const roleSpan = document.getElementById('userDetailRole');
+            roleSpan.textContent = userDetails.role || '-';
+            roleSpan.className = `badge ${userDetails.role === 'Owner' ? 'bg-primary' : 'bg-success'}`;
+            
+            const statusSpan = document.getElementById('userDetailStatus');
+            statusSpan.textContent = userDetails.status || '-';
+            statusSpan.className = `badge ${userDetails.isActive ? 'bg-success' : 'badge-inactive'}`;
+        } else {
+            userDetailsSection.classList.add('d-none');
+        }
+        
+        // Show modal
+        this.modalInstance.show();
+    }
+    
+    hide() {
+        this.modalInstance.hide();
+    }
+    
+    reset() {
+        // Reset modal to default state
+        this.modal.className = 'modal fade';
+        this.confirmCallback = null;
+        this.cancelCallback = null;
+    }
+}
+
+// Initialize global confirmation modal instance
+let confirmationModal;
+document.addEventListener('DOMContentLoaded', function() {
+    confirmationModal = new ConfirmationModal();
+});
+
+// Global helper functions
+window.showConfirmation = function(options) {
+    if (!confirmationModal) {
+        console.error('Confirmation modal not initialized');
+        return;
+    }
+    confirmationModal.show(options);
+};
+
+window.hideConfirmation = function() {
+    if (confirmationModal) {
+        confirmationModal.hide();
+    }
+};
+</script>

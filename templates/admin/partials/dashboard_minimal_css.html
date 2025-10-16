@@ -1,0 +1,152 @@
+<!-- Minimal CSS - Only essential custom styles, rest use Bootstrap -->
+<style>
+/* Brand Colors */
+:root {
+    --primary-color: #9ed649;
+    --primary-hover: #8bc441;
+    --sidebar-width: 250px;
+}
+
+/* Essential Layout - Cannot be replaced by Bootstrap */
+body {
+    background: #f8fdf4;
+    overflow-x: hidden;
+}
+
+.admin-sidebar {
+    width: var(--sidebar-width);
+    background: transparent;
+    height: calc(100vh - 80px);
+    position: fixed;
+    left: 2rem;
+    top: 80px;
+    z-index: 1051;
+}
+
+.admin-sidebar::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 160px;
+    bottom: 0;
+    width: 2px;
+    background: #e0e0e0;
+    z-index: 1;
+}
+
+.admin-main {
+    margin-left: calc(var(--sidebar-width) + 2rem);
+    height: 100vh;
+    margin-top: 0;
+    overflow-y: auto;
+}
+
+/* Custom Sidebar Links - Bootstrap nav doesn't fit this design */
+.sidebar-menu-link {
+    color: #333333 !important;
+    text-decoration: none !important;
+    border-radius: 8px !important;
+    transition: color 0.3s ease !important;
+    font-weight: 500 !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+.sidebar-menu-link:hover {
+    color: var(--primary-color) !important;
+    text-decoration: none !important;
+}
+
+.sidebar-menu-link.active {
+    color: var(--primary-color) !important;
+    font-weight: 600 !important;
+}
+
+/* Chart Container - D3.js specific styles */
+.chart-container {
+    position: relative;
+}
+
+.chart-wrapper {
+    position: relative;
+}
+
+/* Custom Search Box - More compact than Bootstrap */
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    min-width: 250px;
+}
+
+.search-input {
+    border: none;
+    outline: none;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    background: transparent;
+    flex: 1;
+}
+
+.search-btn {
+    background: none;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    color: #64748b;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.search-btn:hover {
+    color: var(--primary-color);
+}
+
+/* Override Bootstrap primary color to use brand color */
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+}
+
+.btn-outline-primary {
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+/* Custom navbar fixes */
+.navbar {
+    z-index: 1060 !important;
+    position: fixed !important;
+    top: 0 !important;
+    width: 100% !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .admin-sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .admin-main {
+        margin-left: 0;
+    }
+    
+    .admin-sidebar.show {
+        transform: translateX(0);
+    }
+}
+</style>

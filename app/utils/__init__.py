@@ -1,0 +1,1 @@
+# CSRF utilities module was removed; keep file minimal

@@ -1,0 +1,284 @@
+<aside class="admin-sidebar p-3">
+    <div class="sidebar-content">
+        <!-- Sidebar Menu -->
+        <ul class="list-unstyled mt-5">
+            <!-- Dashboard/Statistics -->
+            <li class="mb-2">
+                <a href="javascript:void(0)" 
+                   class="sidebar-menu-link d-flex align-items-center gap-3 p-3 rounded" 
+                   id="menu-stats"
+                   data-section="stats">
+                    <i class="fas fa-chart-line fs-5"></i>
+                    <span>Thống kê</span>
+                </a>
+            </li>
+
+            <!-- Customer Management -->
+            <li class="mb-2">
+                <a href="javascript:void(0)" 
+                   class="sidebar-menu-link d-flex align-items-center gap-3 p-3 rounded" 
+                   id="menu-owner"
+                   data-section="owner">
+                    <i class="fas fa-users fs-5"></i>
+                    <span>Quản lý khách hàng</span>
+                </a>
+            </li>
+
+            {% if current_user.is_super_admin %}
+            <!-- Admin Management (Super Admin Only) -->
+            <li class="mb-2">
+                <a href="javascript:void(0)" 
+                   class="sidebar-menu-link d-flex align-items-center gap-3 p-3 rounded" 
+                   id="menu-manage-admin"
+                   data-section="admin">
+                    <i class="fas fa-users-cog fs-5"></i>
+                    <span>Quản lý Admin</span>
+                </a>
+            </li>
+            {% endif %}
+
+            <!-- Homestay Management -->
+            <li class="mb-2">
+                <a href="javascript:void(0)" 
+                   class="sidebar-menu-link d-flex align-items-center gap-3 p-3 rounded" 
+                   id="menu-homestays"
+                   data-section="homestays">
+                    <i class="fas fa-home fs-5"></i>
+                    <span>Quản lý Homestay</span>
+                </a>
+            </li>
+
+            <!-- Booking Management -->
+            <li class="mb-2">
+                <a href="javascript:void(0)" 
+                   class="sidebar-menu-link d-flex align-items-center gap-3 p-3 rounded" 
+                   id="menu-bookings"
+                   data-section="bookings">
+                    <i class="fas fa-calendar-check fs-5"></i>
+                    <span>Quản lý đặt phòng</span>
+                </a>
+            </li>
+
+            <!-- Payment Management -->
+            <li class="mb-2">
+                <a href="javascript:void(0)" 
+                   class="sidebar-menu-link d-flex align-items-center gap-3 p-3 rounded" 
+                   id="menu-payments"
+                   data-section="payments">
+                    <i class="fas fa-credit-card fs-5"></i>
+                    <span>Quản lý thanh toán</span>
+                </a>
+            </li>
+
+            <!-- Reports -->
+            <li class="mb-2">
+                <a href="javascript:void(0)" 
+                   class="sidebar-menu-link d-flex align-items-center gap-3 p-3 rounded" 
+                   id="menu-reports"
+                   data-section="reports">
+                    <i class="fas fa-chart-bar fs-5"></i>
+                    <span>Báo cáo</span>
+                </a>
+            </li>
+
+            <!-- Settings -->
+            <li class="mb-2">
+                <a href="javascript:void(0)" 
+                   class="sidebar-menu-link d-flex align-items-center gap-3 p-3 rounded" 
+                   id="menu-settings"
+                   data-section="settings">
+                    <i class="fas fa-cog fs-5"></i>
+                    <span>Cài đặt</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer mt-auto pt-4">
+            <div class="d-flex align-items-center gap-2 text-muted">
+                <i class="fas fa-shield-alt"></i>
+                <small>Admin Panel v1.0</small>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<style>
+/* Sidebar specific styles */
+.admin-sidebar {
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.sidebar-menu-link {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-menu-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 3px;
+    background: #9ed649;
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.sidebar-menu-link.active::before {
+    transform: scaleY(1);
+}
+
+.sidebar-menu-link:hover {
+    background-color: rgba(158, 214, 73, 0.1) !important;
+    transform: translateX(5px);
+}
+
+.sidebar-menu-link.active {
+    background-color: rgba(158, 214, 73, 0.15) !important;
+    border-left: 3px solid #9ed649;
+}
+
+.sidebar-menu-link i {
+    color: #666;
+    transition: color 0.3s ease;
+}
+
+.sidebar-menu-link:hover i,
+.sidebar-menu-link.active i {
+    color: #9ed649;
+}
+
+.sidebar-footer {
+    border-top: 1px solid #e0e0e0;
+    padding-top: 1rem;
+    margin-top: auto;
+}
+
+/* Mobile sidebar overlay */
+@media (max-width: 768px) {
+    .admin-sidebar {
+        position: fixed;
+        left: -250px;
+        top: 80px;
+        width: 250px;
+        height: calc(100vh - 80px);
+        background: white;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 1055;
+        transition: left 0.3s ease;
+    }
+
+    .admin-sidebar.show {
+        left: 0;
+    }
+
+    .admin-sidebar::after {
+        display: none;
+    }
+
+    /* Overlay background */
+    .admin-sidebar.show::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: -1;
+    }
+}
+
+/* Smooth scrolling for sidebar */
+.admin-sidebar {
+    scrollbar-width: thin;
+    scrollbar-color: #9ed649 transparent;
+}
+
+.admin-sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.admin-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb {
+    background-color: #9ed649;
+    border-radius: 2px;
+}
+
+.admin-sidebar::-webkit-scrollbar-thumb:hover {
+    background-color: #8ab82f;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize sidebar menu
+    const menuLinks = document.querySelectorAll('.sidebar-menu-link');
+    
+    // Set active menu item based on current section
+    function setActiveMenuItem(sectionId) {
+        menuLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('data-section') === sectionId || link.id === `menu-${sectionId}`) {
+                link.classList.add('active');
+            }
+        });
+    }
+
+    // Menu click handlers
+    menuLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Remove active class from all links
+            menuLinks.forEach(l => l.classList.remove('active'));
+            
+            // Add active class to clicked link
+            this.classList.add('active');
+            
+            // Get section from data attribute or id
+            const section = this.getAttribute('data-section') || this.id.replace('menu-', '');
+            
+            // Show section directly if showSection function exists
+            if (typeof window.showSection === 'function') {
+                window.showSection(section);
+            } else {
+                // Fallback: trigger section change event
+                const event = new CustomEvent('sidebarMenuClick', {
+                    detail: { section: section, element: this }
+                });
+                document.dispatchEvent(event);
+            }
+            
+            // Update URL hash
+            if (history.pushState) {
+                history.pushState(null, null, `#${section}`);
+            }
+            
+            // Close mobile sidebar
+            if (window.innerWidth <= 768) {
+                document.querySelector('.admin-sidebar').classList.remove('show');
+            }
+        });
+    });
+
+    // Set default active menu item (stats)
+    setActiveMenuItem('stats');
+    
+    // Expose function globally for external use
+    window.setActiveMenuItem = setActiveMenuItem;
+});
+</script>

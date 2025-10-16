@@ -1,0 +1,516 @@
+{% extends 'owner/base_owner.html' %}
+{% block title %}{{ home.title or 'Chi tiết nhà' }}{% endblock %}
+{% block page_title %}{{ home.title or 'Chi tiết nhà' }}{% endblock %}
+{% block page_subtitle %}Quản lý thông tin chi tiết homestay của bạn{% endblock %}
+{% block page_css %}
+<style>
+  .home-detail-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .home-detail-header {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 24px;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+  }
+
+  .home-cover {
+    position: relative;
+    width: 100%;
+    padding-top: 62.5%;
+    border-radius: 12px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-size: 40px;
+  }
+
+  .home-cover img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .home-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    justify-content: space-between;
+  }
+
+  .status-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .status-pill {
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .status-pill.active {
+    background: rgba(34, 197, 94, 0.12);
+    color: #15803d;
+  }
+
+  .status-pill.inactive {
+    background: rgba(239, 68, 68, 0.12);
+    color: #b91c1c;
+  }
+
+  .status-pill.neutral {
+    background: rgba(15, 23, 42, 0.07);
+    color: #334155;
+  }
+
+  .home-address {
+    color: #475569;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .home-description {
+    color: #334155;
+    line-height: 1.7;
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .home-description.empty {
+    font-style: italic;
+    color: #94a3b8;
+    background: transparent;
+    padding: 0;
+  }
+
+  .home-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 14px;
+  }
+
+  .metric-card {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .metric-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    letter-spacing: 0.8px;
+  }
+
+  .metric-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  .home-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .home-action-btn {
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-weight: 600;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .home-action-btn.primary {
+    background: #9ed649;
+    color: #ffffff;
+    box-shadow: 0 8px 18px rgba(158, 214, 73, 0.35);
+  }
+
+  .home-action-btn.primary:hover {
+    background: #8cc63a;
+  }
+
+  .home-action-btn.secondary {
+    background: transparent;
+    color: #475569;
+    border: 1px solid #cbd5f5;
+  }
+
+  .home-action-btn.secondary:hover {
+    color: #1e293b;
+    border-color: #9aa9d8;
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+  }
+
+  .detail-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 22px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .detail-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+  }
+
+  .pricing-item {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .pricing-label {
+    font-size: 13px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .pricing-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  .pricing-value.empty {
+    color: #94a3b8;
+    font-weight: 500;
+    font-style: italic;
+  }
+
+  .chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  .chip-list li {
+    background: #ecfdf5;
+    color: #047857;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 13px;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+  }
+
+  .chip-list li.rule {
+    background: #fef3c7;
+    color: #b45309;
+    border-color: rgba(251, 191, 36, 0.45);
+  }
+
+  .empty-state {
+    color: #94a3b8;
+    font-style: italic;
+  }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+  }
+
+  .gallery-grid img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .metadata-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+  }
+
+  .metadata-item {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 14px 16px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .metadata-item span {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    letter-spacing: 0.6px;
+    margin-bottom: 6px;
+  }
+
+  .metadata-item strong {
+    color: #1e293b;
+    font-weight: 600;
+    font-size: 15px;
+  }
+
+  @media (max-width: 1024px) {
+    .home-detail-header {
+      grid-template-columns: 1fr;
+    }
+
+    .home-summary {
+      order: -1;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .detail-card {
+      padding: 18px;
+    }
+
+    .pricing-grid,
+    .gallery-grid,
+    .metadata-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+{% endblock %}
+{% block page_content %}
+<div class="home-detail-wrapper">
+  <div class="home-detail-header">
+    <div class="home-summary">
+      <div>
+        <div class="status-row">
+          <span class="status-pill {{ 'active' if home.is_active else 'inactive' }}">
+            <i class="fas {{ 'fa-circle-check' if home.is_active else 'fa-circle-exclamation' }}"></i>
+            {{ 'Đang hoạt động' if home.is_active else 'Đang tạm dừng' }}
+          </span>
+          <span class="status-pill neutral">
+            <i class="fas fa-house"></i>
+            {{ home.home_type or 'Chưa cập nhật' }}
+          </span>
+          <span class="status-pill neutral">
+            <i class="fas fa-door-open"></i>
+            {% if home.accommodation_type == 'private_room' %}Phòng riêng{% else %}Nguyên căn{% endif %}
+          </span>
+        </div>
+        <p class="home-address">
+          <i class="fas fa-map-marker-alt"></i>
+          {{ home.address }}, {{ home.district }}, {{ home.city }}
+        </p>
+        {% if home.description %}
+        <div class="home-description">{{ home.description }}</div>
+        {% else %}
+        <p class="home-description empty">Chưa có mô tả cho homestay này.</p>
+        {% endif %}
+      </div>
+
+      <div class="home-metrics">
+        <div class="metric-card">
+          <span class="metric-label">Khách tối đa</span>
+          <span class="metric-value">{{ home.max_guests }}</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Số giường</span>
+          <span class="metric-value">{{ home.bed_count }}</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Số phòng tắm</span>
+          <span class="metric-value">{{ home.bathroom_count }}</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Tầng</span>
+          <span class="metric-value">{{ home.floor_number }}</span>
+        </div>
+      </div>
+
+      <div class="home-actions">
+        <a
+          href="{{ url_for('owner_homes.edit_home', home_id=home.id) }}"
+          class="home-action-btn primary"
+        >
+          <i class="fas fa-pen"></i>
+          Chỉnh sửa thông tin
+        </a>
+        <a
+          href="{{ url_for('owner_dashboard.dashboard') }}"
+          class="home-action-btn secondary"
+        >
+          <i class="fas fa-arrow-left"></i>
+          Quay lại danh sách
+        </a>
+      </div>
+    </div>
+
+    <div class="home-cover">
+      {% if featured_image %}
+      <img
+        src="{{ url_for('static', filename=featured_image.image_path) }}"
+        alt="Ảnh đại diện {{ home.title }}"
+      />
+      {% else %}
+      <i class="fas fa-image"></i>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    <section class="detail-card">
+      <h3><i class="fas fa-tag"></i> Giá thuê</h3>
+      <div class="pricing-grid">
+        {% for item in pricing_details %}
+        <div class="pricing-item">
+          <span class="pricing-label">{{ item.label }}</span>
+          {% if item.value is not none %}
+          <span class="pricing-value">{{ "{:,.0f}".format(item.value) }} VND</span>
+          {% else %}
+          <span class="pricing-value empty">Chưa cập nhật</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="detail-card">
+      <h3><i class="fas fa-couch"></i> Tiện nghi</h3>
+      {% if amenity_names %}
+      <ul class="chip-list">
+        {% for name in amenity_names %}
+        <li>{{ name }}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="empty-state">Chưa cập nhật tiện nghi.</p>
+      {% endif %}
+    </section>
+
+    <section class="detail-card">
+      <h3><i class="fas fa-clipboard-check"></i> Quy định</h3>
+      {% if rule_names %}
+      <ul class="chip-list">
+        {% for name in rule_names %}
+        <li class="rule">{{ name }}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="empty-state">Chưa có quy định cụ thể.</p>
+      {% endif %}
+    </section>
+
+    <section class="detail-card">
+      <h3><i class="fas fa-info-circle"></i> Thông tin bổ sung</h3>
+      <div class="metadata-grid">
+        <div class="metadata-item">
+          <span>Ngày tạo</span>
+          <strong>
+            {% if home.created_at %}
+              {{ home.created_at.strftime('%d/%m/%Y %H:%M') }}
+            {% else %}
+              Không xác định
+            {% endif %}
+          </strong>
+        </div>
+        <div class="metadata-item">
+          <span>Cập nhật gần nhất</span>
+          <strong>
+            {% if home.updated_at %}
+              {{ home.updated_at.strftime('%d/%m/%Y %H:%M') }}
+            {% else %}
+              Không xác định
+            {% endif %}
+          </strong>
+        </div>
+        <div class="metadata-item">
+          <span>Mã homestay</span>
+          <strong>#{{ '%04d'|format(home.id) }}</strong>
+        </div>
+        <div class="metadata-item">
+          <span>Hoa hồng</span>
+          <strong>
+            {% if home.commission_percent %}
+              {{ '{:.0f}'.format(home.commission_percent) }}%
+            {% else %}
+              Mặc định
+            {% endif %}
+          </strong>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="detail-card">
+    <h3><i class="fas fa-images"></i> Thư viện hình ảnh</h3>
+    {% if featured_image or gallery_images %}
+    <div class="gallery-grid">
+      {% if featured_image %}
+      <img
+        src="{{ url_for('static', filename=featured_image.image_path) }}"
+        alt="Ảnh đại diện {{ home.title }}"
+      />
+      {% endif %}
+      {% for image in gallery_images %}
+      <img
+        src="{{ url_for('static', filename=image.image_path) }}"
+        alt="Ảnh {{ loop.index }} của {{ home.title }}"
+      />
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">Bạn chưa tải hình ảnh nào cho homestay này.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

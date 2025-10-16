@@ -1,0 +1,212 @@
+<!-- Data Table Component -->
+<div class="data-table-container">
+  <div
+    class="table-header d-flex justify-content-between align-items-center mb-3"
+  >
+    <div class="table-title">
+      <h5 class="mb-0">{{ title }}</h5>
+      {% if subtitle %}
+      <small class="text-muted">{{ subtitle }}</small>
+      {% endif %}
+    </div>
+
+    {% if actions %}
+    <div class="table-actions">
+      {% for action in actions %}
+      <a
+        href="{{ action.url }}"
+        class="btn btn-{{ action.class or 'primary' }} btn-sm"
+      >
+        {% if action.icon %}
+        <i class="fas fa-{{ action.icon }} me-2"></i>
+        {% endif %} {{ action.text }}
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  {% if searchable %}
+  <div class="table-search mb-3">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="input-group">
+          <span class="input-group-text">
+            <i class="fas fa-search"></i>
+          </span>
+          <input
+            type="text"
+            class="form-control"
+            id="tableSearch"
+            placeholder="Tìm kiếm..."
+          />
+        </div>
+      </div>
+      {% if filters %}
+      <div class="col-md-6">
+        <div class="row g-2">
+          {% for filter in filters %}
+          <div class="col-md-6">
+            <select
+              class="form-select form-select-sm"
+              id="filter{{ loop.index }}"
+            >
+              <option value="">{{ filter.label }}</option>
+              {% for option in filter.options %}
+              <option value="{{ option.value }}">{{ option.text }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="table-responsive">
+    <table class="table table-hover" id="dataTable">
+      <thead class="table-light">
+        <tr>
+          {% for column in columns %}
+          <th class="{{ column.class or '' }}">
+            {% if column.sortable %}
+            <a
+              href="#"
+              class="text-decoration-none sort-link"
+              data-column="{{ loop.index0 }}"
+            >
+              {{ column.title }}
+              <i class="fas fa-sort ms-1"></i>
+            </a>
+            {% else %} {{ column.title }} {% endif %}
+          </th>
+          {% endfor %} {% if actions_column %}
+          <th class="text-end">Thao tác</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in data %}
+        <tr>
+          {% for column in columns %}
+          <td class="{{ column.class or '' }}">
+            {% if column.type == 'image' %}
+            <img
+              src="{{ row[column.key] }}"
+              alt="{{ column.alt or '' }}"
+              class="table-image"
+            />
+            {% elif column.type == 'badge' %}
+            <span
+              class="badge bg-{{ row[column.key + '_class'] or 'secondary' }}"
+            >
+              {{ row[column.key] }}
+            </span>
+            {% elif column.type == 'date' %} {{ row[column.key] |
+            strftime('%d/%m/%Y') if row[column.key] }} {% elif column.type ==
+            'datetime' %} {{ row[column.key] | strftime('%d/%m/%Y %H:%M') if
+            row[column.key] }} {% elif column.type == 'price' %} {{
+            "{:,.0f}".format(row[column.key]) }} VNĐ {% else %} {{
+            row[column.key] }} {% endif %}
+          </td>
+          {% endfor %} {% if actions_column %}
+          <td class="text-end">
+            <div class="btn-group btn-group-sm">
+              {% for action in actions_column %} {% if action.condition is not
+              defined or row[action.condition.key] == action.condition.value %}
+              <a
+                href="{{ action.url.format(**row) }}"
+                class="btn btn-{{ action.class or 'outline-primary' }} btn-sm"
+                {%
+                if
+                action.confirm
+                %}
+                onclick="return confirm('{{ action.confirm }}')"
+                {%
+                endif
+                %}
+                {%
+                if
+                action.target
+                %}
+                target="{{ action.target }}"
+                {%
+                endif
+                %}
+              >
+                {% if action.icon %}
+                <i class="fas fa-{{ action.icon }}"></i>
+                {% endif %} {% if not action.icon_only %} {{ action.text }} {%
+                endif %}
+              </a>
+              {% endif %} {% endfor %}
+            </div>
+          </td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if pagination %} {% include 'components/pagination.html' %} {% endif %}
+</div>
+
+<style>
+  .table-image {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+
+  .sort-link {
+    color: inherit;
+  }
+
+  .sort-link:hover {
+    color: var(--bs-primary);
+  }
+
+  .table-actions .btn {
+    margin-left: 0.5rem;
+  }
+
+  .table-actions .btn:first-child {
+    margin-left: 0;
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Table search functionality
+    const searchInput = document.getElementById("tableSearch");
+    if (searchInput) {
+      searchInput.addEventListener("keyup", function () {
+        const searchTerm = this.value.toLowerCase();
+        const tableRows = document.querySelectorAll("#dataTable tbody tr");
+
+        tableRows.forEach((row) => {
+          const text = row.textContent.toLowerCase();
+          if (text.includes(searchTerm)) {
+            row.style.display = "";
+          } else {
+            row.style.display = "none";
+          }
+        });
+      });
+    }
+
+    // Sort functionality
+    const sortLinks = document.querySelectorAll(".sort-link");
+    sortLinks.forEach((link) => {
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        const column = parseInt(this.dataset.column);
+        // Add sorting logic here
+      });
+    });
+  });
+</script>

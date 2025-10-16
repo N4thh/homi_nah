@@ -1,0 +1,164 @@
+<!-- Loading Spinner Component -->
+<div class="loading-spinner" id="loadingSpinner">
+  <div class="spinner-container">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <div class="spinner-text mt-2">
+      <span id="loadingText">Đang tải...</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .loading-spinner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+
+  .spinner-container {
+    text-align: center;
+  }
+
+  .spinner-border {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .spinner-text {
+    font-size: 1rem;
+    color: #6c757d;
+  }
+
+  /* Overlay for specific containers */
+  .loading-overlay {
+    position: relative;
+  }
+
+  .loading-overlay .loading-spinner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+
+  /* Button loading state */
+  .btn-loading {
+    position: relative;
+    pointer-events: none;
+  }
+
+  .btn-loading .btn-text {
+    opacity: 0;
+  }
+
+  .btn-loading .btn-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+    100% {
+      transform: translate(-50%, -50%) rotate(360deg);
+    }
+  }
+</style>
+
+<script>
+  // Global loading functions
+  window.showLoading = function (text = "Đang tải...") {
+    const spinner = document.getElementById("loadingSpinner");
+    const loadingText = document.getElementById("loadingText");
+
+    if (spinner && loadingText) {
+      loadingText.textContent = text;
+      spinner.style.display = "flex";
+    }
+  };
+
+  window.hideLoading = function () {
+    const spinner = document.getElementById("loadingSpinner");
+    if (spinner) {
+      spinner.style.display = "none";
+    }
+  };
+
+  // Button loading state
+  window.setButtonLoading = function (button, loading = true) {
+    if (loading) {
+      button.classList.add("btn-loading");
+      button.disabled = true;
+
+      const text = button.textContent;
+      button.innerHTML = `
+            <span class="btn-text" style="opacity: 0;">${text}</span>
+            <span class="btn-spinner"></span>
+        `;
+    } else {
+      button.classList.remove("btn-loading");
+      button.disabled = false;
+
+      const textElement = button.querySelector(".btn-text");
+      if (textElement) {
+        button.textContent = textElement.textContent;
+      }
+    }
+  };
+
+  // Form submission with loading
+  document.addEventListener("DOMContentLoaded", function () {
+    // Auto-loading for forms
+    const forms = document.querySelectorAll('form[data-loading="true"]');
+    forms.forEach((form) => {
+      form.addEventListener("submit", function () {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+          setButtonLoading(submitBtn, true);
+        }
+      });
+    });
+
+    // Auto-loading for links with data-loading attribute
+    const loadingLinks = document.querySelectorAll('a[data-loading="true"]');
+    loadingLinks.forEach((link) => {
+      link.addEventListener("click", function () {
+        showLoading("Đang chuyển trang...");
+      });
+    });
+
+    // Auto-loading for buttons with data-loading attribute
+    const loadingButtons = document.querySelectorAll(
+      'button[data-loading="true"]'
+    );
+    loadingButtons.forEach((button) => {
+      button.addEventListener("click", function () {
+        setButtonLoading(button, true);
+      });
+    });
+  });
+</script>

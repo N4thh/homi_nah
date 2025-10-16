@@ -1,0 +1,1696 @@
+﻿{% extends 'owner/base_owner.html' %}
+
+{% block title %}Thống kê{% endblock %}
+
+{% block page_title %}Thống kê{% endblock %}
+{% block page_subtitle %}Xem thống kê doanh thu và hiệu suất{% endblock %}
+
+{% block page_css %}
+<!-- D3.js CDN -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<style>
+    /* Statistics specific styles */
+
+    .master-filter-bar {
+        background: #FDFBFA;
+        border: 0.3px solid rgba(124, 124, 124, 0.2);
+        border-radius: 12px;
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 0 2rem 1rem 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .master-filter-left {
+        display: flex;
+        align-items: center;
+    }
+
+    .master-filter-group {
+        display: flex;
+        background: #F8F8F8;
+        border-radius: 10px;
+        padding: 4px;
+        border: 1px solid rgba(124, 124, 124, 0.1);
+        gap: 2px;
+    }
+
+    .master-filter-btn {
+        font-size: 12px;
+        font-weight: 500;
+        color: #7C7C7C;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 10px 16px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        min-width: 80px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        position: relative;
+    }
+
+    .master-filter-btn:hover {
+        background: rgba(224, 236, 155, 0.3);
+        color: #101917;
+        transform: translateY(-1px);
+    }
+
+    .master-filter-btn.active {
+        color: #101917;
+        font-weight: 600;
+        background: #E0EC9B;
+        box-shadow: 0 3px 12px rgba(224, 236, 155, 0.4);
+        transform: translateY(-1px);
+    }
+
+    .master-filter-btn i {
+        font-size: 11px;
+    }
+
+    .master-filter-right {
+        display: flex;
+        align-items: center;
+    }
+
+    .chart-type-toggle {
+        display: flex;
+        background: #F8F8F8;
+        border-radius: 10px;
+        padding: 4px;
+        border: 1px solid rgba(124, 124, 124, 0.1);
+        gap: 2px;
+    }
+
+    .chart-type-btn {
+        font-size: 12px;
+        font-weight: 500;
+        color: #7C7C7C;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 10px 14px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        min-width: 85px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .chart-type-btn:hover {
+        background: rgba(224, 236, 155, 0.3);
+        color: #101917;
+        transform: translateY(-1px);
+    }
+
+    .chart-type-btn.active {
+        color: #101917;
+        font-weight: 600;
+        background: #E0EC9B;
+        box-shadow: 0 3px 12px rgba(224, 236, 155, 0.4);
+        transform: translateY(-1px);
+    }
+
+    .chart-type-btn i {
+        font-size: 11px;
+    }
+
+    .master-custom-dropdown {
+        background: #FDFBFA;
+        border: 0.3px solid rgba(124, 124, 124, 0.2);
+        border-radius: 12px;
+        margin: 0 1rem 1.5rem 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+    }
+
+    .master-custom-dropdown.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .date-dropdown-content {
+        padding: 1.5rem;
+    }
+
+    .date-dropdown-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        color: #101917;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .date-dropdown-header i {
+        color: #E0EC9B;
+        font-size: 16px;
+    }
+
+    .date-inputs-row {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .date-input-group {
+        flex: 1;
+    }
+
+    .date-input-group label {
+        display: block;
+        font-size: 11px;
+        font-weight: 500;
+        color: #7C7C7C;
+        margin-bottom: 0.5rem;
+    }
+
+    .date-input-group .date-input {
+        width: 100%;
+        font-size: 12px;
+        padding: 8px 12px;
+        border: 1px solid rgba(124, 124, 124, 0.2);
+        border-radius: 8px;
+        background: white;
+        color: #101917;
+    }
+
+    .date-input-group .date-input:focus {
+        outline: none;
+        border-color: #E0EC9B;
+        box-shadow: 0 0 0 3px rgba(224, 236, 155, 0.2);
+    }
+
+    .date-dropdown-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+
+    .cancel-btn {
+        font-size: 11px;
+        font-weight: 500;
+        color: #7C7C7C;
+        background: transparent;
+        border: 1px solid rgba(124, 124, 124, 0.2);
+        cursor: pointer;
+        padding: 6px 16px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .cancel-btn:hover {
+        background: #f5f5f5;
+        color: #101917;
+    }
+
+    .apply-btn {
+        font-size: 10px;
+        font-weight: 600;
+        color: white;
+        background: #101917;
+        border: none;
+        cursor: pointer;
+        padding: 6px 12px;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+    .apply-btn:hover {
+        background: #2a2a2a;
+        transform: translateY(-1px);
+    }
+
+    /* D3.js Chart Container Styles */
+    .chart-container {
+        background: #FDFBFA;
+        border: 0.3px solid rgba(124, 124, 124, 0.2);
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin: 0 1rem 1.5rem 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .chart-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #101917;
+        margin-bottom: 1rem;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .d3-chart {
+        width: 100%;
+        height: 320px;
+        border-radius: 6px;
+    }
+
+    /* D3 Chart Specific Styles */
+    .d3-chart .bar {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .d3-chart .bar:hover {
+        filter: brightness(1.1);
+        stroke: rgba(16, 25, 23, 0.3);
+        stroke-width: 2px;
+    }
+
+    .d3-chart .axis {
+        font-size: 11px;
+        color: #7C7C7C;
+    }
+
+    .d3-chart .axis path,
+    .d3-chart .axis line {
+        stroke: rgba(124, 124, 124, 0.2);
+        stroke-width: 1;
+    }
+
+    .d3-chart .grid line {
+        stroke: rgba(124, 124, 124, 0.2);
+        stroke-width: 0.5;
+        stroke-dasharray: 2,2;
+    }
+
+    .d3-chart .grid path {
+        stroke-width: 0;
+    }
+
+    .d3-chart .tooltip {
+        position: absolute;
+        background: rgba(16, 25, 23, 0.9);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .d3-chart .legend {
+        font-size: 12px;
+        font-weight: 500;
+        color: #101917;
+    }
+
+    .d3-chart .legend-item {
+        cursor: pointer;
+        transition: opacity 0.3s ease;
+    }
+
+    .d3-chart .legend-item:hover {
+        opacity: 0.7;
+    }
+
+    .d3-chart .legend-item.hidden {
+        opacity: 0.3;
+    }
+
+    /* Rest of the existing styles for stats cards and table */
+    .content-wrapper {
+        padding: 0;
+    }
+
+    .stats-section {
+        margin: 0 1rem 1.5rem 1rem;
+        display: flex;
+        justify-content: center;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.5rem;
+        max-width: 900px;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .stat-card {
+        background: #FDFBFA;
+        border: 0.3px solid rgba(124, 124, 124, 0.2);
+        border-radius: 8px;
+        padding: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 0.4rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        aspect-ratio: 1;
+        min-height: 120px;
+        justify-content: center;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        color: white;
+        background: linear-gradient(135deg, #E0EC9B, #A8D5BA);
+        margin-bottom: 0.2rem;
+    }
+
+    .stat-label {
+        font-size: 10px;
+        font-weight: 500;
+        color: #7C7C7C;
+        margin: 0;
+        line-height: 1.2;
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 14px;
+        font-weight: 700;
+        color: #101917;
+        margin: 0;
+        line-height: 1.1;
+        text-align: center;
+    }
+
+    .stat-change {
+        font-size: 9px;
+        font-weight: 600;
+        margin-top: 0.2rem;
+        padding: 2px 6px;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        opacity: 1;
+        transform: translateY(0);
+        transition: all 0.3s ease;
+    }
+
+    .stat-change.increase {
+        background: rgba(34, 197, 94, 0.1);
+        color: #16a34a;
+        border: 1px solid rgba(34, 197, 94, 0.2);
+    }
+
+    .stat-change.decrease {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .stat-change.neutral {
+        background: rgba(107, 114, 128, 0.1);
+        color: #6b7280;
+        border: 1px solid rgba(107, 114, 128, 0.2);
+    }
+
+    .stat-change i {
+        font-size: 8px;
+    }
+
+    .table-section {
+        background: #FDFBFA;
+        border: 0.3px solid rgba(124, 124, 124, 0.2);
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin: 0 1rem 1.5rem 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .table-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #101917;
+        margin-bottom: 1rem;
+    }
+
+    .stats-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .stats-table th {
+        font-size: 11px;
+        font-weight: 500;
+        color: #7C7C7C;
+        text-align: left;
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid rgba(124, 124, 124, 0.2);
+    }
+
+    .stats-table td {
+        font-size: 11px;
+        font-weight: 500;
+        color: #101917;
+        padding: 0.5rem 0.75rem;
+        border-bottom: 0.5px solid rgba(124, 124, 124, 0.1);
+    }
+
+    .stats-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .rating-stars {
+        color: #101917;
+    }
+
+    .rating-stars i {
+        color: #FFD700;
+        font-size: 12px;
+        margin-left: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="content-wrapper">
+    <!-- Master Filter Bar -->
+            <div class="master-filter-bar">
+                <div class="master-filter-left">
+                    <div class="master-filter-group">
+                        <button class="master-filter-btn active" data-period="total">
+                            <i class="fas fa-chart-pie"></i>
+                            Tổng
+                        </button>
+                        <button class="master-filter-btn" data-period="week">
+                            <i class="fas fa-calendar-week"></i>
+                            Tuần
+                        </button>
+                        <button class="master-filter-btn" data-period="month">
+                            <i class="fas fa-calendar-alt"></i>
+                            Tháng
+                        </button>
+                        <button class="master-filter-btn" data-period="year">
+                            <i class="fas fa-calendar"></i>
+                            Năm
+                        </button>
+                        <button class="master-filter-btn" data-period="custom">
+                            <i class="fas fa-cog"></i>
+                            Tùy chọn
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="master-filter-right">
+                    <div class="chart-type-toggle">
+                        <button class="chart-type-btn" data-chart="hourly">
+                            <i class="fas fa-clock"></i>
+                            Theo giờ
+                        </button>
+                        <button class="chart-type-btn" data-chart="daily">
+                            <i class="fas fa-moon"></i>
+                            Theo ngày
+                        </button>
+                        <button class="chart-type-btn active" data-chart="both">
+                            <i class="fas fa-chart-line"></i>
+                            Cả hai
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Custom Date Picker Dropdown -->
+            <div class="master-custom-dropdown" id="masterCustomDropdown" style="display: none;">
+                <div class="date-dropdown-content">
+                    <div class="date-dropdown-header">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Chọn khoảng thời gian</span>
+                    </div>
+                    <div class="date-inputs-row">
+                        <div class="date-input-group">
+                            <label>Từ ngày</label>
+                            <input type="date" class="date-input" id="masterStartDate">
+                        </div>
+                        <div class="date-input-group">
+                            <label>Đến ngày</label>
+                            <input type="date" class="date-input" id="masterEndDate">
+                        </div>
+                    </div>
+                    <div class="date-dropdown-actions">
+                        <button class="cancel-btn" onclick="closeMasterCustomDatePicker()">Hủy</button>
+                        <button class="apply-btn" onclick="applyMasterCustomDate()">Áp dụng</button>
+                    </div>
+                </div>
+            </div>
+
+        <div class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-money-bill"></i>
+                    </div>
+                    <div class="stat-label">Lợi nhuận</div>
+                    <div class="stat-value" id="stat-profit">{{ "{:,}".format(stats.total_profit) }} VND</div>
+                    <div class="stat-change" id="change-profit">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+0%</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-label">Số giờ đã thuê</div>
+                    <div class="stat-value" id="stat-hours">{{ stats.total_hours }} giờ</div>
+                    <div class="stat-change" id="change-hours">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+0%</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-label">Số lần thuê</div>
+                    <div class="stat-value" id="stat-bookings">{{ stats.total_bookings }} lần</div>
+                    <div class="stat-change" id="change-bookings">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+0%</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="stat-label">Tỷ lệ thuê</div>
+                    <div class="stat-value" id="stat-rate">{{ stats.booking_rate }}</div>
+                    <div class="stat-change" id="change-rate">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+0%</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-tag"></i>
+                    </div>
+                    <div class="stat-label">Hình thức phổ biến</div>
+                    <div class="stat-value" id="stat-type">{{ stats.common_type }}</div>
+                    <div class="stat-change neutral" id="change-type">
+                        <i class="fas fa-minus"></i>
+                        <span>Không đổi</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-label">Đánh giá trung bình</div>
+                    <div class="stat-value" id="stat-rating">{{ stats.average_rating }}</div>
+                    <div class="stat-change" id="change-rating">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>+0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="chart-container">
+            <div class="chart-title" id="chartTitle">
+                <i class="fas fa-chart-line" style="color: #E0EC9B;"></i>
+                So sánh doanh thu theo giờ và theo ngày
+            </div>
+            <div id="d3Chart" class="d3-chart"></div>
+        </div>
+
+        <div class="table-section">
+            <div class="table-title">Các homestay nổi bật</div>
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th>Phòng</th>
+                        <th>Hình thức</th>
+                        <th>Doanh thu tổng</th>
+                        <th>Số lần thuê</th>
+                        <th>Tỷ lệ thuê</th>
+                        <th>Đánh giá</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for home in stats.top_homes[:5] %}
+                    <tr>
+                        <td>{{ home.name }}</td>
+                        <td>{{ home.type }}</td>
+                        <td>{{ "{:,}".format(home.revenue) }} VND</td>
+                        <td>{{ home.bookings }}</td>
+                        <td>{{ home.booking_rate }}</td>
+                        <td>
+                            <span class="rating-stars">
+                                {{ home.rating }}
+                                <i class="fas fa-star"></i>
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #7C7C7C;">Chưa có dữ liệu</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+</div>
+
+<script>
+// Data cache and state
+let chartDataCache = {};
+let statsDataCache = {};
+let currentPeriod = 'total';
+let currentChart = 'both';
+let d3Chart = null;
+let tooltip = null;
+
+// Clear cache on load
+chartDataCache = {};
+statsDataCache = {};
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded, initializing D3.js charts');
+    
+    setupMasterFilters();
+    setupChartTypeFilters();
+    
+    // Initialize chart with initial data
+    initializeD3Chart();
+    
+    // Load initial data
+    loadAllDataWithChartType('total', currentChart);
+    
+    // Set default dates for date picker
+    const today = new Date();
+    const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+    
+    document.getElementById('masterStartDate').value = lastWeek.toISOString().split('T')[0];
+    document.getElementById('masterEndDate').value = today.toISOString().split('T')[0];
+});
+
+// Initialize D3 Chart
+function initializeD3Chart() {
+    const container = d3.select('#d3Chart');
+    
+    // Clear any existing content
+    container.selectAll('*').remove();
+    
+    // Create SVG
+    const margin = { top: 15, right: 25, bottom: 50, left: 70 };
+    const width = container.node().getBoundingClientRect().width - margin.left - margin.right;
+    const height = 320 - margin.top - margin.bottom;
+    
+    const svg = container
+        .append('svg')
+        .attr('width', width + margin.left + margin.right)
+        .attr('height', height + margin.top + margin.bottom);
+    
+    const g = svg.append('g')
+        .attr('transform', `translate(${margin.left},${margin.top})`);
+    
+    // Create tooltip
+    tooltip = d3.select('body')
+        .append('div')
+        .attr('class', 'tooltip')
+        .style('position', 'absolute')
+        .style('background', 'rgba(16, 25, 23, 0.9)')
+        .style('color', 'white')
+        .style('padding', '8px 12px')
+        .style('border-radius', '6px')
+        .style('font-size', '12px')
+        .style('font-weight', '500')
+        .style('pointer-events', 'none')
+        .style('opacity', 0)
+        .style('z-index', 1000)
+        .style('box-shadow', '0 4px 12px rgba(0, 0, 0, 0.3)');
+    
+    // Store chart dimensions for later use
+    d3Chart = {
+        svg: svg,
+        g: g,
+        width: width,
+        height: height,
+        margin: margin
+    };
+}
+
+// Update D3 Chart with new data
+function updateD3Chart(chartData, chartType) {
+    if (!d3Chart) {
+        initializeD3Chart();
+    }
+    
+    const { svg, g, width, height, margin } = d3Chart;
+    
+    // Clear existing chart
+    g.selectAll('*').remove();
+    
+    if (chartType === 'both') {
+        updateStackedBarChart(chartData, g, width, height);
+    } else {
+        updateSingleBarChart(chartData[chartType] || [], chartType, g, width, height);
+    }
+}
+
+// Update single bar chart
+function updateSingleBarChart(data, chartType, g, width, height) {
+    if (!data || data.length === 0) {
+        // Show empty state
+        g.append('rect')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('fill', 'rgba(240, 240, 240, 0.3)')
+            .attr('stroke', 'rgba(124, 124, 124, 0.3)')
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '5,5')
+            .attr('rx', 8);
+            
+        g.append('text')
+            .attr('x', width / 2)
+            .attr('y', height / 2 - 10)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '16px')
+            .style('font-weight', 'bold')
+            .style('color', '#7C7C7C')
+            .text('📊 Chưa có dữ liệu');
+            
+        g.append('text')
+            .attr('x', width / 2)
+            .attr('y', height / 2 + 10)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '12px')
+            .style('color', '#7C7C7C')
+            .text('Dữ liệu sẽ hiển thị khi có booking');
+        return;
+    }
+    
+    // Check if all data is zero
+    const hasRealData = data.some(d => d.revenue > 0);
+    if (!hasRealData) {
+        // Show empty state
+        g.append('rect')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('fill', 'rgba(240, 240, 240, 0.3)')
+            .attr('stroke', 'rgba(124, 124, 124, 0.3)')
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '5,5')
+            .attr('rx', 8);
+            
+        g.append('text')
+            .attr('x', width / 2)
+            .attr('y', height / 2 - 10)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '16px')
+            .style('font-weight', 'bold')
+            .style('color', '#7C7C7C')
+            .text('📊 Chưa có dữ liệu');
+            
+                 g.append('text')
+             .attr('x', width / 2)
+             .attr('y', height / 2 + 10)
+             .attr('text-anchor', 'middle')
+             .style('font-size', '12px')
+             .style('color', '#7C7C7C')
+             .text('Dữ liệu sẽ hiển thị khi có booking');
+         return;
+     }
+     
+     // Continue with normal chart rendering
+     updateSingleBarChartWithData(data, chartType, g, width, height);
+}
+
+function generateSampleData(days, chartType) {
+    const sampleData = [];
+    const today = new Date();
+    
+    for (let i = days - 1; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        
+        // Generate random but realistic sample revenue
+        const baseRevenue = chartType === 'hourly' ? 50000 : 200000;
+        const randomMultiplier = 0.3 + Math.random() * 0.7; // 30% to 100% of base
+        const revenue = Math.floor(baseRevenue * randomMultiplier);
+        
+        sampleData.push({
+            date: date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }),
+            revenue: revenue
+        });
+    }
+    
+    return sampleData;
+}
+
+// Update single bar chart with data
+function updateSingleBarChartWithData(data, chartType, g, width, height, isPlaceholder = false) {
+    
+    // Set up scales
+    const xScale = d3.scaleBand()
+        .domain(data.map(d => d.date))
+        .range([0, width])
+        .padding(0.1);
+    
+    const maxRevenue = d3.max(data, d => d.revenue) || 0;
+    const yScale = d3.scaleLinear()
+        .domain([0, Math.max(maxRevenue, 100)]) // Ensure minimum domain of 100
+        .range([height, 0]);
+    
+    // Create grid lines
+    const yGrid = d3.axisLeft(yScale)
+        .tickSize(-width)
+        .tickFormat('');
+    
+    g.append('g')
+        .attr('class', 'grid')
+        .call(yGrid)
+        .selectAll('line')
+        .style('stroke', 'rgba(124, 124, 124, 0.2)')
+        .style('stroke-width', 0.5)
+        .style('stroke-dasharray', '2,2');
+    
+    // Create axes
+    const xAxis = d3.axisBottom(xScale)
+        .tickFormat(d => {
+            // Format date labels
+            if (d.length > 8) return d.substring(0, 8) + '...';
+            return d;
+        });
+    
+    const yAxis = d3.axisLeft(yScale)
+        .tickFormat(d => {
+            if (d >= 1000000) return `${(d / 1000000).toFixed(0)}M`;
+            if (d >= 1000) return `${(d / 1000).toFixed(0)}k`;
+            return d.toString();
+        });
+    
+    g.append('g')
+        .attr('class', 'axis')
+        .attr('transform', `translate(0,${height})`)
+        .call(xAxis)
+        .selectAll('text')
+        .style('text-anchor', 'end')
+        .attr('dx', '-.8em')
+        .attr('dy', '.15em')
+        .attr('transform', 'rotate(-45)')
+        .style('font-size', '11px')
+        .style('fill', '#7C7C7C');
+    
+    g.append('g')
+        .attr('class', 'axis')
+        .call(yAxis)
+        .selectAll('text')
+        .style('font-size', '11px')
+        .style('fill', '#7C7C7C');
+    
+    // Create bars
+    const color = chartType === 'hourly' ? '#E0EC9B' : '#A8D5BA';
+    
+    g.selectAll('.bar')
+        .data(data)
+        .enter()
+        .append('rect')
+        .attr('class', 'bar')
+        .attr('x', d => xScale(d.date))
+        .attr('width', xScale.bandwidth())
+        .attr('y', height)
+        .attr('height', 0)
+        .attr('fill', color)
+        .attr('stroke', 'rgba(16, 25, 23, 0.1)')
+        .attr('stroke-width', 1)
+        .attr('rx', 3)
+        .attr('ry', 3)
+        .style('cursor', 'pointer')
+        .on('mouseover', function(event, d) {
+            d3.select(this)
+                .style('filter', 'brightness(1.1)')
+                .style('stroke', 'rgba(16, 25, 23, 0.3)')
+                .style('stroke-width', 2);
+            
+            tooltip
+                .style('opacity', 1)
+                .html(`<strong>${d.date}</strong><br/>Doanh thu: ${formatCurrency(d.revenue)}`)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 10) + 'px');
+        })
+        .on('mouseout', function() {
+            d3.select(this)
+                .style('filter', 'brightness(1)')
+                .style('stroke', 'rgba(16, 25, 23, 0.1)')
+                .style('stroke-width', 1);
+            
+            tooltip.style('opacity', 0);
+        })
+        .transition()
+        .duration(800)
+        .ease(d3.easeElastic)
+        .attr('y', d => yScale(d.revenue))
+        .attr('height', d => height - yScale(d.revenue));
+}
+
+// Update stacked bar chart
+function updateStackedBarChart(chartData, g, width, height) {
+    const hourlyData = chartData.hourly || [];
+    const nightlyData = chartData.daily || [];
+    
+    if (hourlyData.length === 0 && nightlyData.length === 0) {
+        // Show empty state with background
+        g.append('rect')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('fill', 'rgba(240, 240, 240, 0.3)')
+            .attr('stroke', 'rgba(124, 124, 124, 0.3)')
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '5,5')
+            .attr('rx', 8);
+            
+        g.append('text')
+            .attr('x', width / 2)
+            .attr('y', height / 2 - 10)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '16px')
+            .style('font-weight', 'bold')
+            .style('color', '#7C7C7C')
+            .text('📊 Chưa có dữ liệu');
+            
+        g.append('text')
+            .attr('x', width / 2)
+            .attr('y', height / 2 + 10)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '12px')
+            .style('color', '#7C7C7C')
+            .text('Dữ liệu sẽ hiển thị khi có booking');
+        return;
+    }
+    
+    // Prepare stacked data with correct bottom-to-top ordering
+    const dates = [...new Set([...hourlyData.map(d => d.date), ...nightlyData.map(d => d.date)])];
+    const stackedData = dates.map(date => {
+        const hourly = hourlyData.find(d => d.date === date)?.revenue || 0;
+        const nightly = nightlyData.find(d => d.date === date)?.revenue || 0;
+        
+        // Determine which value should be at bottom (smaller) and top (larger)
+        const bottomValue = Math.min(hourly, nightly);
+        const topValue = Math.max(hourly, nightly);
+        const bottomType = hourly <= nightly ? 'hourly' : 'nightly';
+        const topType = hourly > nightly ? 'hourly' : 'nightly';
+        
+        return {
+            date: date,
+            hourly: hourly,
+            nightly: nightly,
+            total: hourly + nightly,
+            bottomValue: bottomValue,
+            topValue: topValue,
+            bottomType: bottomType,
+            topType: topType
+        };
+    });
+    
+    // Check if all data is zero
+    const hasRealData = stackedData.some(d => d.total > 0);
+    if (!hasRealData) {
+        // Show empty state with background
+        g.append('rect')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('fill', 'rgba(240, 240, 240, 0.3)')
+            .attr('stroke', 'rgba(124, 124, 124, 0.3)')
+            .attr('stroke-width', 2)
+            .attr('stroke-dasharray', '5,5')
+            .attr('rx', 8);
+            
+        g.append('text')
+            .attr('x', width / 2)
+            .attr('y', height / 2 - 10)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '16px')
+            .style('font-weight', 'bold')
+            .style('color', '#7C7C7C')
+            .text('📊 Chưa có dữ liệu');
+            
+        g.append('text')
+            .attr('x', width / 2)
+            .attr('y', height / 2 + 10)
+            .attr('text-anchor', 'middle')
+            .style('font-size', '12px')
+            .style('color', '#7C7C7C')
+            .text('Dữ liệu sẽ hiển thị khi có booking');
+        return;
+    }
+    
+    // Set up scales
+    const xScale = d3.scaleBand()
+        .domain(dates)
+        .range([0, width])
+        .padding(0.1);
+    
+    const maxTotal = d3.max(stackedData, d => d.total) || 0;
+    const yScale = d3.scaleLinear()
+        .domain([0, Math.max(maxTotal, 100)]) // Ensure minimum domain of 100
+        .range([height, 0]);
+    
+    // Create grid lines
+    const yGrid = d3.axisLeft(yScale)
+        .tickSize(-width)
+        .tickFormat('');
+    
+    g.append('g')
+        .attr('class', 'grid')
+        .call(yGrid)
+        .selectAll('line')
+        .style('stroke', 'rgba(124, 124, 124, 0.2)')
+        .style('stroke-width', 0.5)
+        .style('stroke-dasharray', '2,2');
+    
+    // Create axes
+    const xAxis = d3.axisBottom(xScale)
+        .tickFormat(d => {
+            if (d.length > 8) return d.substring(0, 8) + '...';
+            return d;
+        });
+    
+    const yAxis = d3.axisLeft(yScale)
+        .tickFormat(d => {
+            if (d >= 1000000) return `${(d / 1000000).toFixed(0)}M`;
+            if (d >= 1000) return `${(d / 1000).toFixed(0)}k`;
+            return d.toString();
+        });
+    
+    g.append('g')
+        .attr('class', 'axis')
+        .attr('transform', `translate(0,${height})`)
+        .call(xAxis)
+        .selectAll('text')
+        .style('text-anchor', 'end')
+        .attr('dx', '-.8em')
+        .attr('dy', '.15em')
+        .attr('transform', 'rotate(-45)')
+        .style('font-size', '11px')
+        .style('fill', '#7C7C7C');
+    
+    g.append('g')
+        .attr('class', 'axis')
+        .call(yAxis)
+        .selectAll('text')
+        .style('font-size', '11px')
+        .style('fill', '#7C7C7C');
+    
+    // Create bottom bars (smaller value)
+    g.selectAll('.bar-bottom')
+        .data(stackedData)
+        .enter()
+        .append('rect')
+        .attr('class', 'bar bar-bottom')
+        .attr('x', d => xScale(d.date))
+        .attr('width', xScale.bandwidth())
+        .attr('y', height)
+        .attr('height', 0)
+        .attr('fill', d => d.bottomType === 'hourly' ? '#E0EC9B' : '#A8D5BA')
+        .attr('stroke', 'rgba(16, 25, 23, 0.1)')
+        .attr('stroke-width', 1)
+        .attr('rx', 3)
+        .attr('ry', 3)
+        .style('cursor', 'pointer')
+        .on('mouseover', function(event, d) {
+            tooltip
+                .style('opacity', 1)
+                .html(`<strong>${d.date}</strong><br/>Theo ngày: ${formatCurrency(d.nightly)}<br/>Theo giờ: ${formatCurrency(d.hourly)}<br/>Tổng: ${formatCurrency(d.total)}`)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 10) + 'px');
+        })
+        .on('mouseout', function() {
+            tooltip.style('opacity', 0);
+        })
+        .transition()
+        .duration(800)
+        .ease(d3.easeElastic)
+        .attr('y', d => yScale(d.bottomValue))
+        .attr('height', d => height - yScale(d.bottomValue));
+    
+    // Create top bars (larger value)
+    g.selectAll('.bar-top')
+        .data(stackedData)
+        .enter()
+        .append('rect')
+        .attr('class', 'bar bar-top')
+        .attr('x', d => xScale(d.date))
+        .attr('width', xScale.bandwidth())
+        .attr('y', d => yScale(d.bottomValue))
+        .attr('height', 0)
+        .attr('fill', d => d.topType === 'hourly' ? '#E0EC9B' : '#A8D5BA')
+        .attr('stroke', 'rgba(16, 25, 23, 0.1)')
+        .attr('stroke-width', 1)
+        .attr('rx', 3)
+        .attr('ry', 3)
+        .style('cursor', 'pointer')
+        .on('mouseover', function(event, d) {
+            tooltip
+                .style('opacity', 1)
+                .html(`<strong>${d.date}</strong><br/>Theo ngày: ${formatCurrency(d.nightly)}<br/>Theo giờ: ${formatCurrency(d.hourly)}<br/>Tổng: ${formatCurrency(d.total)}`)
+                .style('left', (event.pageX + 10) + 'px')
+                .style('top', (event.pageY - 10) + 'px');
+        })
+        .on('mouseout', function() {
+            tooltip.style('opacity', 0);
+        })
+        .transition()
+        .duration(800)
+        .ease(d3.easeElastic)
+        .delay(200)
+        .attr('y', d => yScale(d.total))
+        .attr('height', d => yScale(d.bottomValue) - yScale(d.total));
+    
+    // Create legend on the title bar (outside chart area)
+    createTitleBarLegend();
+}
+
+// Create legend on title bar
+function createTitleBarLegend() {
+    // Remove existing legend if any
+    d3.select('.chart-title-legend').remove();
+    
+    // Get title container
+    const titleContainer = document.querySelector('.chart-title');
+    if (!titleContainer) return;
+    
+    // Create legend container
+    const legendDiv = document.createElement('div');
+    legendDiv.className = 'chart-title-legend';
+    legendDiv.style.cssText = `
+        position: absolute;
+        top: 50%;
+        right: 20px;
+        transform: translateY(-50%);
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        z-index: 10;
+    `;
+    
+    // Legend data
+    const legendData = [
+        { label: 'Theo giờ', color: '#E0EC9B' },
+        { label: 'Theo ngày', color: '#A8D5BA' }
+    ];
+    
+    // Create legend items
+    legendData.forEach(item => {
+        const legendItem = document.createElement('div');
+        legendItem.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #101917;
+        `;
+        
+        const colorBox = document.createElement('div');
+        colorBox.style.cssText = `
+            width: 12px;
+            height: 12px;
+            background-color: ${item.color};
+            border-radius: 2px;
+            border: 1px solid rgba(16, 25, 23, 0.1);
+        `;
+        
+        const label = document.createElement('span');
+        label.textContent = item.label;
+        
+        legendItem.appendChild(colorBox);
+        legendItem.appendChild(label);
+        legendDiv.appendChild(legendItem);
+    });
+    
+    // Make title container relative positioned
+    titleContainer.style.position = 'relative';
+    titleContainer.appendChild(legendDiv);
+}
+
+// Setup master filter buttons
+function setupMasterFilters() {
+    const filterButtons = document.querySelectorAll('.master-filter-btn');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const period = this.getAttribute('data-period');
+            
+            // Remove active class from all buttons
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            if (period === 'custom') {
+                // Show custom date picker
+                showMasterCustomDatePicker();
+            } else {
+                // Hide custom date picker
+                hideMasterCustomDatePicker();
+                // Update current period and load data
+                currentPeriod = period;
+                loadAllDataWithChartType(period, currentChart);
+            }
+        });
+    });
+}
+
+// Setup chart type filter buttons
+function setupChartTypeFilters() {
+    const chartButtons = document.querySelectorAll('.chart-type-btn');
+    chartButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const chartType = this.getAttribute('data-chart');
+            
+            // Remove active class from all buttons
+            chartButtons.forEach(btn => btn.classList.remove('active'));
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            // Update current chart type and load data
+            currentChart = chartType;
+            loadAllDataWithChartType(currentPeriod, chartType);
+            
+            // Update chart title
+            updateChartTitle(chartType);
+        });
+    });
+}
+
+// Show custom date picker
+function showMasterCustomDatePicker() {
+    const dropdown = document.getElementById('masterCustomDropdown');
+    dropdown.style.display = 'block';
+    setTimeout(() => {
+        dropdown.classList.add('show');
+    }, 10);
+}
+
+// Hide custom date picker
+function hideMasterCustomDatePicker() {
+    const dropdown = document.getElementById('masterCustomDropdown');
+    dropdown.classList.remove('show');
+    setTimeout(() => {
+        dropdown.style.display = 'none';
+    }, 300);
+}
+
+// Update chart title based on chart type
+function updateChartTitle(chartType) {
+    const chartTitle = document.getElementById('chartTitle');
+    const icon = '<i class="fas fa-chart-line" style="color: #E0EC9B;"></i>';
+    
+    let title;
+    switch(chartType) {
+        case 'hourly':
+            title = 'Doanh thu theo giờ';
+            break;
+        case 'daily':
+            title = 'Doanh thu theo ngày';
+            break;
+        case 'both':
+        default:
+            title = 'So sánh doanh thu theo giờ và theo ngày';
+            break;
+    }
+    
+    chartTitle.innerHTML = `${icon} ${title}`;
+}
+
+// Load all data (stats + chart)
+function loadAllData(period) {
+    // Show loading state
+    showLoadingState();
+    
+    // Use current chart type for loading
+    const cacheKey = `${period}_${currentChart}`;
+    
+    // Check cache first
+    if (statsDataCache[cacheKey] && chartDataCache[cacheKey]) {
+        updateAllUI(statsDataCache[cacheKey], chartDataCache[cacheKey], period);
+        return;
+    }
+    
+    // Fetch stats data with chart type
+    Promise.all([
+        fetch(`/owner/api/stats-data/${period}/${currentChart}`).then(r => r.json()),
+        fetch(`/owner/api/chart-data/${period}/${currentChart}`).then(r => r.json())
+    ]).then(([statsData, chartData]) => {
+        statsDataCache[cacheKey] = statsData;
+        chartDataCache[cacheKey] = chartData;
+        updateAllUI(statsData, chartData, period);
+    }).catch(error => {
+        console.error('Error loading data:', error);
+        showNotification('Có lỗi xảy ra khi tải dữ liệu', 'error');
+        hideLoadingState();
+    });
+}
+
+// Load all data with specific chart type
+function loadAllDataWithChartType(period, chartType) {
+    // Show loading state
+    showLoadingState();
+    
+    const cacheKey = `${period}_${chartType}`;
+    
+    // Check cache first
+    if (statsDataCache[cacheKey] && chartDataCache[cacheKey]) {
+        updateAllUI(statsDataCache[cacheKey], chartDataCache[cacheKey], period);
+        return;
+    }
+    
+    // Fetch stats data with chart type
+    Promise.all([
+        fetch(`/owner/api/stats-data/${period}/${chartType}`).then(r => r.json()),
+        fetch(`/owner/api/chart-data/${period}/${chartType}`).then(r => r.json())
+    ]).then(([statsData, chartData]) => {
+        statsDataCache[cacheKey] = statsData;
+        chartDataCache[cacheKey] = chartData;
+        updateAllUI(statsData, chartData, period);
+    }).catch(error => {
+        console.error('Error loading data:', error);
+        showNotification('Có lỗi xảy ra khi tải dữ liệu', 'error');
+        hideLoadingState();
+    });
+}
+
+// Load only chart data (not used anymore, kept for compatibility)
+function loadChartData(period) {
+    // Just redirect to loadAllDataWithChartType to ensure stats also update
+    loadAllDataWithChartType(period, currentChart);
+}
+
+// Update all UI components
+function updateAllUI(statsData, chartData, period = null) {
+    // Update statistics cards
+    updateStatsCards(statsData);
+    
+    // Update percentage changes
+    updatePercentageChanges(statsData, period);
+    
+    // Update chart with explicit period
+    updateChart(chartData, period);
+    
+    // Update table
+    updateTable(statsData.top_homes);
+    
+    hideLoadingState();
+}
+
+// Update chart
+function updateChart(data, period = null) {
+    console.log('Updating D3.js chart with data:', data, 'chartType:', currentChart);
+    updateD3Chart(data, currentChart);
+}
+
+// Update statistics cards
+function updateStatsCards(data) {
+    const cards = document.querySelectorAll('.stat-card');
+    const values = [
+        data.total_profit || '0 VND',
+        data.total_hours || '0 giờ', 
+        data.total_bookings || '0 lần',
+        data.booking_rate || '0%',
+        data.common_type || 'Chưa có',
+        data.average_rating || '0/5'
+    ];
+    
+    cards.forEach((card, index) => {
+        const valueElement = card.querySelector('.stat-value');
+        if (valueElement && values[index] !== undefined) {
+            valueElement.textContent = values[index];
+        }
+    });
+}
+
+// Update percentage changes
+function updatePercentageChanges(data, period) {
+    // Only show percentage changes for week, month, year periods
+    if (!['week', 'month', 'year'].includes(period)) {
+        // Hide all percentage indicators for total or custom periods
+        document.querySelectorAll('.stat-change').forEach(el => {
+            el.style.display = 'none';
+        });
+        return;
+    }
+    
+    // Show percentage indicators
+    document.querySelectorAll('.stat-change').forEach(el => {
+        el.style.display = 'inline-flex';
+    });
+    
+    // Get percentage changes from data or generate demo data
+    const changes = data.percentage_changes || generateDemoPercentageChanges(period);
+    
+    // Update each stat change
+    updateStatChange('change-profit', changes.profit || 0, 'Tăng', 'Giảm');
+    updateStatChange('change-hours', changes.hours || 0, 'Tăng', 'Giảm');
+    updateStatChange('change-bookings', changes.bookings || 0, 'Tăng', 'Giảm');
+    updateStatChange('change-rate', changes.booking_rate || 0, 'Tăng', 'Giảm');
+    updateStatChange('change-rating', changes.rating || 0, 'Tăng', 'Giảm');
+    
+    // Handle common type (non-numeric)
+    const typeElement = document.getElementById('change-type');
+    if (changes.common_type_changed) {
+        typeElement.className = 'stat-change neutral';
+        typeElement.innerHTML = '<i class="fas fa-exchange-alt"></i><span>Đã thay đổi</span>';
+    } else {
+        typeElement.className = 'stat-change neutral';
+        typeElement.innerHTML = '<i class="fas fa-minus"></i><span>Không đổi</span>';
+    }
+}
+
+// Generate demo percentage changes (remove this when backend provides real data)
+function generateDemoPercentageChanges(period) {
+    // Different demo data based on period
+    const demoData = {
+        'week': {
+            profit: 12.5,
+            hours: 8.3,
+            bookings: 15.2,
+            booking_rate: 5.7,
+            rating: 2.1,
+            common_type_changed: false
+        },
+        'month': {
+            profit: -3.2,
+            hours: 4.8,
+            bookings: -1.5,
+            booking_rate: 7.3,
+            rating: -0.8,
+            common_type_changed: true
+        },
+        'year': {
+            profit: 28.7,
+            hours: 35.4,
+            bookings: 42.1,
+            booking_rate: 12.8,
+            rating: 8.5,
+            common_type_changed: false
+        }
+    };
+    
+    return demoData[period] || {
+        profit: 0,
+        hours: 0,
+        bookings: 0,
+        booking_rate: 0,
+        rating: 0,
+        common_type_changed: false
+    };
+}
+
+// Update individual stat change indicator
+function updateStatChange(elementId, percentage, increaseText, decreaseText) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    const absPercentage = Math.abs(percentage);
+    const roundedPercentage = Math.round(absPercentage * 10) / 10; // Round to 1 decimal
+    
+    if (percentage > 0) {
+        element.className = 'stat-change increase';
+        element.innerHTML = `<i class="fas fa-arrow-up"></i><span>${increaseText} ${roundedPercentage}%</span>`;
+    } else if (percentage < 0) {
+        element.className = 'stat-change decrease';
+        element.innerHTML = `<i class="fas fa-arrow-down"></i><span>${decreaseText} ${roundedPercentage}%</span>`;
+    } else {
+        element.className = 'stat-change neutral';
+        element.innerHTML = '<i class="fas fa-minus"></i><span>Không đổi</span>';
+    }
+}
+
+// Update table with top homes
+function updateTable(topHomes) {
+    const tbody = document.querySelector('.stats-table tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    if (!topHomes || topHomes.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #7C7C7C;">Chưa có dữ liệu</td></tr>';
+        return;
+    }
+    
+    topHomes.slice(0, 5).forEach(home => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${home.name}</td>
+            <td>${home.type}</td>
+            <td>${home.revenue.toLocaleString()} VND</td>
+            <td>${home.bookings}</td>
+            <td>${home.booking_rate}</td>
+            <td>
+                <span class="rating-stars">
+                    ${home.rating}
+                    <i class="fas fa-star"></i>
+                </span>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// Utility functions
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+        minimumFractionDigits: 0
+    }).format(amount);
+}
+
+// Utility functions
+function showLoadingState() {
+    document.querySelectorAll('.stat-card, .chart-container, .table-section').forEach(el => {
+        el.style.opacity = '0.6';
+    });
+}
+
+function hideLoadingState() {
+    document.querySelectorAll('.stat-card, .chart-container, .table-section').forEach(el => {
+        el.style.opacity = '1';
+    });
+}
+
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-size: 14px;
+        font-weight: 500;
+        z-index: 9999;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        ${type === 'error' ? 'background: #e74c3c;' : 
+          type === 'warning' ? 'background: #f39c12;' : 
+          'background: #27ae60;'}
+    `;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
+// Master custom date picker functions
+function closeMasterCustomDatePicker() {
+    const dropdown = document.getElementById('masterCustomDropdown');
+    dropdown.classList.remove('show');
+    
+    setTimeout(() => {
+        dropdown.style.display = 'none';
+    }, 300);
+    
+    // Reset to total filter
+    document.querySelectorAll('.master-filter-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector('.master-filter-btn[data-period="total"]').classList.add('active');
+    currentPeriod = 'total';
+}
+
+function applyMasterCustomDate() {
+    const startDate = document.getElementById('masterStartDate').value;
+    const endDate = document.getElementById('masterEndDate').value;
+    
+    if (!startDate || !endDate) {
+        showNotification('Vui lòng chọn đầy đủ ngày bắt đầu và kết thúc', 'error');
+        return;
+    }
+    
+    if (new Date(startDate) > new Date(endDate)) {
+        showNotification('Ngày bắt đầu không thể lớn hơn ngày kết thúc', 'error');
+        return;
+    }
+    
+    // Close dropdown
+    closeMasterCustomDatePicker();
+    
+    // Load data with custom range
+    const customPeriod = `custom_${startDate}_${endDate}`;
+    currentPeriod = customPeriod;
+    
+    // Show loading
+    showLoadingState();
+    
+    // Fetch both stats and chart data with custom date range and chart type
+    Promise.all([
+        fetch(`/owner/api/stats-data/custom/${currentChart}?start=${startDate}&end=${endDate}`).then(r => r.json()),
+        fetch(`/owner/api/chart-data/custom?start=${startDate}&end=${endDate}`).then(r => r.json())
+    ]).then(([statsData, chartData]) => {
+        const cacheKey = `${customPeriod}_${currentChart}`;
+        statsDataCache[cacheKey] = statsData;
+        chartDataCache[cacheKey] = chartData;
+        updateAllUI(statsData, chartData);
+        showNotification('Đã cập nhật dữ liệu theo khoảng thời gian đã chọn', 'info');
+    }).catch(error => {
+        console.error('Error loading custom date data:', error);
+        showNotification('Có lỗi xảy ra khi tải dữ liệu', 'error');
+        hideLoadingState();
+    });
+}
+</script>
+{% endblock %}

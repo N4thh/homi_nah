@@ -1,0 +1,71 @@
+<!-- Renter Sidebar Component -->
+<aside class="renter-sidebar">
+  <div class="sidebar-header">
+    <h5 class="sidebar-title">
+      <i class="fas fa-user me-2"></i>
+      Renter Panel
+    </h5>
+  </div>
+
+  <ul class="sidebar-menu">
+    <li class="sidebar-menu-item">
+      <a
+        href="{{ url_for('renter_dashboard.dashboard') }}"
+        class="sidebar-menu-link {{ 'active' if request.endpoint == 'renter_dashboard.dashboard' }}"
+      >
+        <i class="fas fa-tachometer-alt"></i>
+        <span>Dashboard</span>
+      </a>
+    </li>
+
+    <li class="sidebar-menu-item">
+      <a
+        href="{{ url_for('renter_search.search') }}"
+        class="sidebar-menu-link {{ 'active' if request.endpoint == 'renter_search.search' }}"
+      >
+        <i class="fas fa-search"></i>
+        <span>Tìm kiếm</span>
+      </a>
+    </li>
+
+    <li class="sidebar-menu-item">
+      <a
+        href="{{ url_for('renter_bookings.bookings') }}"
+        class="sidebar-menu-link {{ 'active' if request.endpoint.startswith('renter_bookings') }}"
+      >
+        <i class="fas fa-calendar-check"></i>
+        <span>Đặt phòng của tôi</span>
+      </a>
+    </li>
+
+    <li class="sidebar-menu-item">
+      <a
+        href="{{ url_for('renter_profile.profile') }}"
+        class="sidebar-menu-link {{ 'active' if request.endpoint.startswith('renter_profile') }}"
+      >
+        <i class="fas fa-user"></i>
+        <span>Hồ sơ</span>
+      </a>
+    </li>
+
+    <li class="sidebar-menu-item">
+      <a
+        href="{{ url_for('renter_profile.favorites') }}"
+        class="sidebar-menu-link {{ 'active' if request.endpoint == 'renter_profile.favorites' }}"
+      >
+        <i class="fas fa-heart"></i>
+        <span>Yêu thích</span>
+      </a>
+    </li>
+  </ul>
+
+  <div class="sidebar-footer">
+    <a
+      href="{{ url_for('renter_profile.settings') }}"
+      class="sidebar-footer-link"
+    >
+      <i class="fas fa-cog me-2"></i>
+      Cài đặt
+    </a>
+  </div>
+</aside>
