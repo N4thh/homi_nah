@@ -2197,7 +2197,7 @@ home.home_number }}{% endblock %} {% block extra_css %}
                 type="text"
                 class="form-control guest-display"
                 id="guests-hourly"
-                value="{{ (search_params.adults or '1') + ' người lớn, ' + (search_params.children or '0') + ' Trẻ em' }}"
+                value="{{ (search_params.adults or '1') ~ ' người lớn, ' ~ (search_params.children or '0') ~ ' Trẻ em' }}"
                 readonly
                 onclick="showGuestSelector(this)"
               />
@@ -2423,7 +2423,7 @@ home.home_number }}{% endblock %} {% block extra_css %}
                 type="text"
                 class="form-control guest-display"
                 id="guests-daily"
-                value="{{ (search_params.adults or '1') + ' người lớn, ' + (search_params.children or '0') + ' Trẻ em' }}"
+                value="{{ (search_params.adults or '1') ~ ' người lớn, ' ~ (search_params.children or '0') ~ ' Trẻ em' }}"
                 readonly
               />
               <div class="guest-dropdown" id="guest-dropdown-daily">

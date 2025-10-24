@@ -2894,6 +2894,7 @@
         const loginSuccess = urlParams.get('login_success');
         const logoutSuccess = urlParams.get('logout_success');
         const loginError = urlParams.get('login_error');
+        const profileUpdated = urlParams.get('profile_updated');
         if (loginSuccess) {
             showNotification('success', 'Chúc mừng bạn đăng nhập thành công!');
             // Remove login_success parameter from URL
@@ -2906,8 +2907,9 @@
             showNotification('error', 'Tên đăng nhập hoặc mật khẩu không chính xác!');
             // Remove login_error parameter from URL
             removeURLParameter('login_error');
-        } else if (message === 'Profile updated successfully!') {
+        } else if (profileUpdated) {
             showNotification('success', 'Thông tin của bạn đã được cập nhật');
+            removeURLParameter('profile_updated');
         }
         
         // Function to remove URL parameter without page reload
