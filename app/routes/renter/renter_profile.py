@@ -285,53 +285,96 @@ def handle_profile_update():
     try:
         # Get form data
         full_name = request.form.get('full_name', '').strip()
+        first_name = request.form.get('first_name', '').strip()
+        last_name = request.form.get('last_name', '').strip()
         email = request.form.get('email', '').strip()
         phone = request.form.get('phone', '').strip()
         bio = request.form.get('bio', '').strip()
         address = request.form.get('address', '').strip()
-        
+        gender = request.form.get('gender', '').strip()
+        username = request.form.get('username', '').strip()
+        birth_date_str = request.form.get('birth_date', '').strip()
+
         # Validate required fields
         if not full_name:
             flash('Họ tên không được để trống', 'danger')
             return redirect(url_for('renter_profile.profile'))
-        
+
         if not email:
             flash('Email không được để trống', 'danger')
             return redirect(url_for('renter_profile.profile'))
-        
+
         if not phone:
             flash('Số điện thoại không được để trống', 'danger')
             return redirect(url_for('renter_profile.profile'))
-        
+
         # Validate email format
         from app.utils.email_validator import process_email
         email_result = process_email(email)
         if not email_result['valid']:
             flash(email_result['message'], 'danger')
             return redirect(url_for('renter_profile.profile'))
-        
+
         # Check if email is already used
         existing_renter = Renter.query.filter(
             Renter.email == email,
             Renter.id != current_user.id
         ).first()
-        
+
         if existing_renter:
             flash('Email đã được sử dụng bởi tài khoản khác', 'danger')
             return redirect(url_for('renter_profile.profile'))
-        
+
+        # Check if username is already used (if changed and user is not Google user)
+        if username and not current_user.is_google:
+            existing_username = Renter.query.filter(
+                Renter.username == username,
+                Renter.id != current_user.id
+            ).first()
+            if existing_username:
+                flash('Tên đăng nhập đã được sử dụng', 'danger')
+                return redirect(url_for('renter_profile.profile'))
+
         # Update profile
         current_user.full_name = full_name
+        if first_name:
+            current_user.first_name = first_name
+        if last_name:
+            current_user.last_name = last_name
         current_user.email = email
         current_user.phone = phone
         current_user.bio = bio
         current_user.address = address
-        
+        if gender:
+            current_user.gender = gender
+        if username and not current_user.is_google:
+            current_user.username = username
+
+        # Handle birth date
+        if birth_date_str:
+            try:
+                current_user.birth_date = datetime.strptime(birth_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                pass  # Skip if invalid date format
+
+        # Handle avatar upload
+        avatar = request.files.get('avatar')
+        if avatar and avatar.filename:
+            from werkzeug.utils import secure_filename
+            from app.utils.file_handler import save_avatar
+            try:
+                avatar_url = save_avatar(avatar, current_user.id, 'renter')
+                if avatar_url:
+                    current_user.avatar_url = avatar_url
+            except Exception as e:
+                current_app.logger.error(f"Error uploading avatar: {str(e)}")
+                # Continue with other updates even if avatar fails
+
         db.session.commit()
-        
+
         flash('Thông tin cá nhân đã được cập nhật thành công', 'success')
         return redirect(url_for('renter_profile.profile'))
-        
+
     except Exception as e:
         db.session.rollback()
         current_app.logger.error(f"Error updating profile: {str(e)}")
