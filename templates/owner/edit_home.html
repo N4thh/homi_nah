@@ -2909,6 +2909,9 @@ extra_css %}
         rentalTypeInput.value = selectedRentalType.value;
         this.appendChild(rentalTypeInput);
       }
+
+      // Allow form submission to proceed
+      return true;
     });
 
   // Check if user has modified any pricing fields
