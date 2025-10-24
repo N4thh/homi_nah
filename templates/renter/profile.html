@@ -1376,7 +1376,46 @@ function saveChanges() {
 
 function validateAndSubmitForm(event) {
     event.preventDefault();
-    return false; // Prevent default form submission
+
+    // Validate form first
+    if (!validateForm()) {
+        return false;
+    }
+
+    // Combine first_name and last_name into full_name
+    const firstName = document.getElementById('first_name').value.trim();
+    const lastName = document.getElementById('last_name').value.trim();
+    const fullName = firstName + ' ' + lastName;
+
+    // Create or update hidden full_name field
+    let fullNameInput = document.querySelector('input[name="full_name"]');
+    if (!fullNameInput) {
+        fullNameInput = document.createElement('input');
+        fullNameInput.type = 'hidden';
+        fullNameInput.name = 'full_name';
+        document.getElementById('profileForm').appendChild(fullNameInput);
+    }
+    fullNameInput.value = fullName;
+
+    // Combine birth date fields if they exist
+    const birthDay = document.querySelector('select[name="birth_day"]').value;
+    const birthMonth = document.querySelector('select[name="birth_month"]').value;
+    const birthYear = document.querySelector('select[name="birth_year"]').value;
+
+    if (birthDay && birthMonth && birthYear) {
+        let birthDateInput = document.querySelector('input[name="birth_date"]');
+        if (!birthDateInput) {
+            birthDateInput = document.createElement('input');
+            birthDateInput.type = 'hidden';
+            birthDateInput.name = 'birth_date';
+            document.getElementById('profileForm').appendChild(birthDateInput);
+        }
+        birthDateInput.value = `${birthYear}-${birthMonth.padStart(2, '0')}-${birthDay.padStart(2, '0')}`;
+    }
+
+    // Submit the form
+    document.getElementById('profileForm').submit();
+    return true;
 }
 
 function validateForm() {
